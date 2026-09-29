@@ -1,0 +1,101 @@
+# Material de sustentación — insumo vivo
+
+> Archivo vivo que acumula lo importante para defender la solución ante el panel (45 min:
+> demo, defensa de arquitectura, cambio en vivo, preguntas). Se actualiza en cada fase.
+> Última actualización: fin de Fase 2.
+
+## Frases clave (para responder con criterio)
+
+- **Stack:** "Elijo lo que domino para poder defenderlo" — criterio válido bajo restricción de tiempo.
+- **Tool calling:** "El LLM propone, la herramienta dispone."
+- **Seguridad del LLM:** "La seguridad no depende de que el modelo se porte bien, sino de reglas de dominio verificadas."
+- **Despliegue:** "Criterio de ingeniero de soluciones: saber cuándo NO construir."
+- **Vulnerabilidades:** "El número de vulnerabilidades no es la métrica de riesgo; el vector sí."
+- **Defensa en profundidad:** "No dependo de que la capa superior valide bien; las capas inferiores nunca ofrecen lo que el afiliado no tiene."
+
+## Decisiones de arquitectura y su defensa
+
+### Stack: React + Node.js/TypeScript
+- Lo que se domina y se puede defender en vivo. Tipado end-to-end, un solo lenguaje, ecosistema
+  maduro de PDF y validación (Zod).
+- Tradeoff reconocido: Python tiene SDKs de LLM más maduros. Respuesta: para un prototipo con
+  tool calling controlado y modelo local, Node da velocidad y unifica el stack; en producción
+  se reconsideraría Python si el equipo lo domina.
+
+### LLM local (Ollama, qwen2.5:7b)
+- Cero costo, sin free tier, privacidad y residencia de datos local (relevante para entidad
+  vigilada por la Superintendencia Financiera). Sin dependencia de aprobaciones externas.
+- Tradeoff: menor calidad que modelos frontera. Se probó que el tool calling nativo funciona,
+  pero se controla desde el orquestador por seguridad (ver abajo).
+
+### Tool calling determinista (Camino B)
+- El orquestador (código) controla el flujo y la ejecución; el LLM entiende lenguaje natural y
+  propone intención, pero NO decide autónomamente acceder a datos.
+- Cuatro razones por las que el LLM no toca los datos: (1) evita filtración/modificación,
+  (2) evita ejecución no determinista, (3) contiene alucinaciones, (4) auditabilidad y
+  autorización: cada acceso es una llamada explícita, loggeable, con verificación de sesión.
+- Se probó que el modelo hace tool calling nativo; se eligió controlarlo a propósito. Posición
+  fuerte: "funciona de las dos formas y elegí la más segura."
+
+### Arquitectura hexagonal + BFF (ADR-001)
+- Cuatro capas: domain / application / infrastructure / interfaces. Dependencias hacia adentro.
+- El dominio no conoce Ollama ni Express → cambiar de proveedor de LLM o de fuente de datos es
+  cambiar un adaptador. Fuerte para el "camino a producción en AWS".
+- El BFF es la única puerta entre el navegador y los servicios internos: frontera de confianza
+  donde viven autenticación, autorización por sesión, enmascaramiento de PII y el registro de tools.
+
+### Despliegue local + video (no AWS real)
+- Con una noche, la ventaja es tomar decisiones acertadas bajo restricción y defenderlas, no
+  "desplegué en AWS". El camino a producción en AWS se demuestra como diseño (C4), sin gastar
+  la noche. IaC como diseño objetivo en el documento de solución.
+
+## Seguridad (el corazón de la Opción B)
+
+### La invariante central: `puedeAccederA` (dominio, función pura)
+- Una sesión solo accede a los datos del afiliado cuya identidad validó.
+- Es dominio puro y testeable en aislamiento. Aunque el LLM se dejara engañar (caso de prueba 5),
+  esta regla bloquea el acceso a otro afiliado.
+
+### El registro de herramientas: punto de estrangulamiento único
+- Toda ejecución que el LLM propone pasa por tres puertas antes de tocar datos:
+  1. La herramienta debe existir (si el LLM alucina un nombre → `herramienta_no_encontrada`).
+  2. Los argumentos deben validar contra el schema Zod (`safeParse`, no lanza → `argumentos_invalidos`).
+  3. Si requiere autorización, la sesión debe poder acceder al afiliado objetivo → `no_autorizado`.
+- La autorización se reusa del dominio (`puedeAccederA`), no se reimplementa: un solo lugar de verdad.
+- Se verifica ANTES de ejecutar; probado que la herramienta no se invoca si falla la autorización.
+
+### Defensa en profundidad
+- `certificadosDisponiblesPara` (dominio): un afiliado solo puede pedir certificados de productos
+  que realmente posee. Aunque el orquestador omita validar, las capas inferiores no ofrecen de más.
+
+### Manejo de secretos y datos
+- `PROTOTYPE_ACCESS_KEY` por variable de entorno (secreto real); OTP `123456` es valor de prueba,
+  no secreto. Distinción explícita.
+- `.gitignore` deja fuera PDFs confidenciales y `.env`; el JSON ficticio sí entra (la app lo necesita).
+
+## DevSecOps
+
+### Convivencia con Cerberus (validador corporativo de Protección)
+- El código pasa las mismas puertas de calidad que el de Protección: conventional commits,
+  versiones exactas de dependencias, detección de secretos, SAST (Semgrep), ESLint.
+- Punto de sustentación: se adoptaron controles de calidad corporativos en un repo personal.
+
+### Análisis de dependencias (SCA)
+- `npm audit` reportó vulnerabilidades, pero `npm audit --omit=dev` = 0: todas son de
+  dependencias de desarrollo (dev server de Vitest/Vite/esbuild), no del artefacto de producción.
+- Decisión: documentar y monitorear en CI, no aplicar fix forzado (breaking change sin reducir
+  riesgo real). Criterio: analizar el vector, no reaccionar al número.
+
+## Pruebas (20% de la rúbrica)
+- 32 pruebas al cierre de Fase 2. Patrón: Vitest + AAA, nombres `should + acción + resultado`,
+  tiempo determinista (constantes, no Date.now()), un comportamiento por test.
+- Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).
+- Se prueba comportamiento observable, no detalles internos (ej. health check vía HTTP con supertest).
+
+## Preguntas probables del panel y respuesta preparada
+- *"¿Por qué el LLM no accede a los datos directamente?"* → ver Tool calling determinista.
+- *"¿Cómo garantizas el aislamiento entre afiliados (caso 5)?"* → invariante `puedeAccederA` + registro.
+- *"¿Por qué no usaste base de datos?"* → persistencia en memoria por alcance; datos de afiliados
+  se leen del JSON que simula el sistema origen; en producción sería Redis con TTL para sesión.
+- *"¿Por qué Node y no Python?"* → ver Stack.
+- *"¿Por qué no desplegaste en AWS?"* → ver Despliegue; camino a producción demostrado como diseño.

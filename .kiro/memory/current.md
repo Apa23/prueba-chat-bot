@@ -7,9 +7,21 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 1 COMPLETADA y commiteada. Lista para Fase 2 (dominio y herramientas).**
-Historial: 9 commits. Nota: 3 commits iniciales (20d49cf, 1cf7bbe, 87944fc) quedaron con
-formato viejo por el intento forzado; el candidato decidió dejarlos (no reescribir historia).
+**Fase 2 COMPLETADA — núcleo de dominio + contrato de herramientas. Siguiente: Fase 3 (orquestador).**
+
+## Fase 2 — resumen
+- Dominio puro (español, inmutable): afiliado, certificado, sesion, identidad, faq,
+  certificados-disponibles. Reglas: puedeAccederA, validarIdentidad, datosFaltantesPara,
+  estaDentroDeAlcance, certificadosDisponiblesPara.
+- Contrato de herramientas (application): Herramienta<E,S> con schema Zod + flag de autorización;
+  RegistroHerramientas como punto único de ejecución con 3 controles (existencia, forma Zod,
+  autorización vía puedeAccederA). Clase instanciable, inyectada desde composition root.
+- Decisión de diseño: se descartó Singleton para la autorización (función pura sin estado);
+  se usa inyección desde composition root (mejor testabilidad, sin estado global).
+- 32 pruebas, todas verificando comportamiento. Tests trazados a casos B.3 (1,2,4,5,6,7,8).
+- Parte de las reglas de dominio se delegaron a un sub-agente ("equipo") y se revisaron como analista.
+- Fuente de datos: se mantiene una sola copia en data/ (se eliminó docs/), byte-idéntica al original.
+- Material de sustentación centralizado en .kiro/reports/sustentacion.md (archivo vivo).
 
 ## Fase 1 — resumen (lunes 28, noche)
 - Monorepo con npm workspaces: backend/ (Express+TS hexagonal, BFF), frontend/ (React+Vite).

@@ -93,8 +93,20 @@
 - Defensa: latencia en caliente aceptable para chat; el cold start se mitiga en producción
   manteniendo el modelo precargado (o con Bedrock, sin gestión de carga local).
 
+## Orquestador conversacional (Fase 3)
+- Máquina de estados determinista: inicio → identificando_intencion → validando_identidad →
+  recolectando_datos → ejecutando → completado; más escalado_humano (fallo de negocio) y
+  fallo_tecnico (fallo de plataforma, terminal).
+- El LLM SOLO clasifica intención (JSON validado con Zod) y redacta. Las decisiones (validar,
+  autorizar, qué falta, escalar) las toma el código. "El LLM interpreta y redacta; decide el orquestador."
+- Distinción clave: JSON inválido del modelo → 'desconocida' (repregunta); Ollama caído → excepción
+  → fallo_tecnico terminal. Fallo de negocio vs. fallo de plataforma, separados por diseño.
+- Endpoints REST separados por responsabilidad (SRP): crear sesión / enviar mensaje / validar identidad.
+- Verificado END-TO-END con Ollama real: crear sesión → validar identidad → pedir certificado → ejecutando.
+
 ## Pruebas (20% de la rúbrica)
-- 32 pruebas al cierre de Fase 2. Patrón: Vitest + AAA, nombres `should + acción + resultado`,
+- 61 pruebas al cierre de Fase 3 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
+  + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.
 - Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).
 - Se prueba comportamiento observable, no detalles internos (ej. health check vía HTTP con supertest).

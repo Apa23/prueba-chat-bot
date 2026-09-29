@@ -7,7 +7,20 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 2 COMPLETADA — núcleo de dominio + contrato de herramientas. Siguiente: Fase 3 (orquestador).**
+**Fase 3 COMPLETADA — orquestador + LLM + HTTP. Verificado end-to-end con Ollama real. Siguiente: Fase 4 (PDF).**
+
+## Fase 3 — resumen
+- Orquestador determinista (máquina de estados) con estado terminal de fallo técnico. LLM solo
+  clasifica intención (JSON validado con Zod) y redacta; las decisiones las toma el código.
+- LlmPort (puerto) + OllamaLlmAdapter (format:json + doble validación, degrada a 'desconocida')
+  + LlmMock (doble determinista para desarrollo incremental).
+- Puertos: AfiliadoRepositoryPort, SessionStorePort. Implementaciones: JsonAfiliadoRepository
+  (mapea snake_case→camelCase), InMemorySessionStore.
+- Endpoints REST separados por responsabilidad (SRP): POST /sesiones, POST /sesiones/:id/mensajes,
+  POST /sesiones/:id/identidad. Errores consistentes con códigos HTTP. Bloqueo OTP (429), expiración (410).
+- 61 tests (incluye integración HTTP con supertest), cobertura 98.61%. Verificado en vivo con Ollama.
+- Latencia LLM medida: cold start ~7s, caliente 0.6-1.5s (en sustentacion.md).
+- Aprendizaje: el build real (tsc) atrapó errores de tipos que tsx toleraba (req.params en Express 5).
 
 ## Fase 2 — resumen
 - Dominio puro (español, inmutable): afiliado, certificado, sesion, identidad, faq,

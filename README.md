@@ -1,80 +1,91 @@
 # Prototipo de chatbot con IA para generación de certificados
 
-> **Prototipo de evaluación – no oficial.** Construido para la prueba técnica de Ingeniero
-> de Soluciones TI (Opción B). Usa exclusivamente datos ficticios. No representa un canal
-> oficial ni usa marca de ninguna entidad.
+> **Prototipo de evaluación – no oficial.** Prueba técnica de Ingeniero de Soluciones TI (Opción B).
+> Usa exclusivamente datos ficticios. No representa un canal oficial ni usa marca de ninguna entidad.
 
-Asistente conversacional que atiende solicitudes de certificados de afiliados ficticios de
-un fondo de pensiones y cesantías, y genera el documento en PDF. El modelo de lenguaje
-entiende la conversación, pero **no accede a los datos directamente**: lo hace a través de
-herramientas controladas por el orquestador, con validación de identidad y autorización por sesión.
+Asistente conversacional que atiende solicitudes de certificados de afiliados ficticios de un fondo de
+pensiones y cesantías, y genera el documento en PDF. El modelo de lenguaje entiende la conversación,
+pero **no accede a los datos directamente**: lo hace a través de herramientas controladas por el
+orquestador, con validación de identidad y autorización por sesión.
 
 ## Arquitectura resumida
 
-- **Backend (BFF)**: Node.js + TypeScript, arquitectura hexagonal (puertos y adaptadores).
-  Única puerta entre el navegador y los servicios internos (LLM, datos, PDF).
-  - `domain` — entidades y reglas de negocio puras.
-  - `application` — casos de uso, orquestador conversacional y puertos.
-  - `infrastructure` — adaptadores (Ollama, repositorio JSON, PDF, sesión en memoria).
-  - `interfaces` — API HTTP y registro de herramientas (tools).
-- **Frontend**: React + Vite (chat web).
-- **LLM**: modelo local vía Ollama (`qwen2.5:7b`). Sin costo, sin dependencia de nube.
-- **Persistencia**: en memoria (sesión conversacional). Los datos de afiliados se leen del
-  archivo de datos ficticios; no hay base de datos por decisión de alcance (ver ADR).
+- **Backend (BFF):** Node.js + TypeScript, arquitectura hexagonal (domain / application /
+  infrastructure / interfaces). Única puerta entre el navegador y los servicios internos.
+- **Frontend:** React + Vite (chat web, atomic design), acceso protegido con clave.
+- **LLM:** modelo local vía Ollama (`qwen2.5:7b`). Orquestación determinista (el LLM interpreta y
+  redacta; el código decide).
+- **Persistencia:** en memoria (sesión). Datos de afiliados y FAQs desde JSON (sin base de datos).
 
-Diagramas C4 (niveles 1 y 2) y ADR en `.kiro/reports/`.
+Documento de solución, diagramas C4, ADR y reportes en `docs/` y `.kiro/reports/`.
+
+## Funcionalidades
+
+Conversación en lenguaje natural · validación de identidad (documento + OTP) · consentimiento de datos
+· generación de certificados en PDF (marca de agua + código de verificación) · FAQs con grounding y
+cita de fuente · escalamiento a asesor · seguridad de LLM (anti prompt-injection, aislamiento entre
+afiliados, enmascaramiento de PII).
 
 ## Requisitos previos
 
 - Node.js >= 22
-- [Ollama](https://ollama.com) corriendo en el host con el modelo descargado:
+- [Ollama](https://ollama.com) corriendo en el host con el modelo:
   ```bash
   ollama pull qwen2.5:7b
   ```
-- Docker + Docker Compose (para la ejecución con un solo comando)
+- Docker + Docker Compose (para ejecución con un solo comando)
 
-## Cómo ejecutar localmente (desarrollo)
+## Configuración
 
 ```bash
-# 1. Instalar dependencias (workspaces del monorepo)
-npm install
-
-# 2. Copiar variables de entorno
-cp .env.example .env   # ajustar PROTOTYPE_ACCESS_KEY
-
-# 3. Backend (en una terminal)
-npm run dev:backend
-
-# 4. Frontend (en otra terminal)
-npm run dev:frontend
+cp .env.example .env    # ajustar PROTOTYPE_ACCESS_KEY (clave del prototipo)
+npm install             # workspaces del monorepo
 ```
 
-- Backend: http://localhost:3001 (health check en `/health`)
-- Frontend: http://localhost:5173
+## Ejecución local (desarrollo)
 
-## Cómo ejecutar con Docker (un solo comando)
+```bash
+npm run dev:backend     # http://localhost:3001 (health en /health)
+npm run dev:frontend    # http://localhost:5173
+```
+
+Ingresa la clave definida en `PROTOTYPE_ACCESS_KEY` en la pantalla de acceso.
+OTP válido para todos los afiliados de prueba: `123456`. Documentos: `PRUEBA-0001` a `PRUEBA-0005`.
+
+## Ejecución con Docker (un solo comando)
 
 ```bash
 docker compose up
 ```
 
-> Ollama corre en el host (no en contenedor) por aceleración de GPU en Apple Silicon; los
-> contenedores lo alcanzan vía `host.docker.internal`. Detalle en `docker-compose.yml`.
+> Ollama corre en el host (aceleración de GPU en Apple Silicon); los contenedores lo alcanzan vía
+> `host.docker.internal`. Detalle en `docker-compose.yml`.
 
-## Cómo ejecutar las pruebas
+## Pruebas
 
 ```bash
-npm test                              # pruebas del backend
-npm run test:coverage --workspace backend   # con reporte de cobertura
+npm test                                      # pruebas del backend (103)
+npm run test:coverage --workspace backend     # con cobertura (~96% de la lógica)
+npx tsx backend/scripts/casos-prueba.ts        # los 12 casos del anexo B.3 (requiere backend + Ollama)
 ```
 
-## Estado del proyecto
+## Estructura del proyecto
 
-En construcción (prueba técnica). El avance por fases y las decisiones se documentan en
-`.kiro/memory/` y `.kiro/reports/`.
+```
+backend/    BFF hexagonal (domain, application, infrastructure, interfaces) + tests
+frontend/   React + Vite (atomic design)
+data/       datos ficticios y plantillas de certificado
+docs/        documento de solución, declaración de uso de IA
+.kiro/       memoria de decisiones y reportes (ADR, C4, seguridad, casos de prueba, sustentación)
+```
 
-## Notas de seguridad
+## Seguridad
 
 - Ningún secreto se versiona: `.env` está en `.gitignore`; usar `.env.example` como plantilla.
-- El acceso al prototipo se protege con `PROTOTYPE_ACCESS_KEY` (se comparte solo con el panel).
-- Datos 100% ficticios (`data/datos_ficticios_chatbot.json`).
+- Acceso al prototipo protegido con `PROTOTYPE_ACCESS_KEY` (se comparte solo con el panel).
+- Datos 100% ficticios. Mapeo OWASP Top 10 LLM en `.kiro/reports/seguridad-owasp-llm.md`.
+
+## Notas
+
+- Prototipo de evaluación: eliminar el despliegue al terminar el proceso de selección.
+- Resultados de los 12 casos de prueba: `.kiro/reports/test-cases-results.md`.

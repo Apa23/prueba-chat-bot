@@ -7,7 +7,9 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 1 completada — andamiaje del monorepo listo y verificado. Siguiente: Fase 2 (dominio y tools).**
+**Fase 1 COMPLETADA y commiteada. Lista para Fase 2 (dominio y herramientas).**
+Historial: 9 commits. Nota: 3 commits iniciales (20d49cf, 1cf7bbe, 87944fc) quedaron con
+formato viejo por el intento forzado; el candidato decidió dejarlos (no reescribir historia).
 
 ## Fase 1 — resumen (lunes 28, noche)
 - Monorepo con npm workspaces: backend/ (Express+TS hexagonal, BFF), frontend/ (React+Vite).
@@ -53,8 +55,23 @@ Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 - [ ] Cerrar el plan por fases.
 - [ ] Definir estructura de carpetas del proyecto (arquitectura hexagonal).
 
+## Convención de commits (Cerberus — hook corporativo activo)
+Se decidió CONVIVIR con Cerberus (validador corporativo de Protección, instalado global).
+Reglas que DEBEN cumplirse en cada commit para pasar sin forzar:
+- Formato: `tipo(scope): descripción [HU-XXX]`  — el scope entre paréntesis es OBLIGATORIO.
+- Tipos permitidos: feat, fix, refactor, test, docs, INC, chore.
+- max_length: 50 caracteres. min_description: 10. Referencia obligatoria prefijo HU o INC.
+- Versiones de dependencias EXACTAS (sin ^). package.json debe tener scripts `test` y `start`.
+- Requiere GITLAB_TOKEN (está en ~/.zshrc; pasar `source ~/.zshrc` en shells no interactivos).
+- El menú interactivo de Cerberus lee de /dev/tty y cuelga shells no interactivos ante
+  errores/warnings → asegurar que el commit pase LIMPIO (sin warnings) para no bloquear.
+- pre_push exige cobertura >= 80% y compilación+tests en ramas protegidas. Tenerlo presente.
+- Convención de referencia por fase: [HU-001] = Fase 1, [HU-002] = Fase 2, etc.
+
 ## Bloqueos / riesgos abiertos
-- Ninguno crítico. Entorno firme. Riesgo de tool calling local quedó descartado por la prueba.
+- Ninguno crítico. Entorno firme. Convivencia con Cerberus resuelta.
+- Nota para Fase 9 (CI): el pipeline propio (GitHub Actions) replicará controles equivalentes
+  (SAST/SCA/secretos) ya que Cerberus apunta a infraestructura interna de Protección.
 
 ## Notas para la sustentación (se van acumulando aquí)
 - Frase clave tool calling: "El LLM propone, la herramienta dispone."

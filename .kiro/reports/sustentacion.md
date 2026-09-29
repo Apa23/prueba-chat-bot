@@ -104,8 +104,20 @@
 - Endpoints REST separados por responsabilidad (SRP): crear sesión / enviar mensaje / validar identidad.
 - Verificado END-TO-END con Ollama real: crear sesión → validar identidad → pedir certificado → ejecutando.
 
+## Generación de certificados PDF (Fase 4, B4)
+- PDFKit por ser liviano y sin dependencias de navegador (defendible en Docker sin Chromium).
+- Círculo de seguridad cerrado: la generación pasa por el RegistroHerramientas con autorización;
+  el PDF solo se emite si puedeAccederA valida la sesión para ese afiliado. Aunque el orquestador
+  tuviera un bug, el registro bloquea la emisión no autorizada.
+- Caso 3 cubierto: si el año no tiene datos, devuelve anio_sin_datos (no inventa). Regla en armarCertificado.
+- PDF con rótulo de prototipo + marca de agua "SIN VALIDEZ" + código de verificación (cumple 5.6 y B4).
+- Decisión consciente (defensa): código de verificación = token de descarga por simplicidad. En prod
+  serían distintos: token de un solo uso con expiración corta; código de verificación público que solo
+  confirma autenticidad sin dar acceso al documento.
+- Entrega por enlace temporal: GET /descargas/:token. En memoria (coherente con persistencia efímera).
+
 ## Pruebas (20% de la rúbrica)
-- 61 pruebas al cierre de Fase 3 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
+- 72 pruebas al cierre de Fase 4 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
   + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.
 - Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).

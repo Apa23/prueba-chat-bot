@@ -7,7 +7,21 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 3 COMPLETADA — orquestador + LLM + HTTP. Verificado end-to-end con Ollama real. Siguiente: Fase 4 (PDF).**
+**Fase 4 COMPLETADA — generación de PDF. Flujo completo verificado con Ollama real. Siguiente: Fase 5 (RAG/FAQ).**
+
+## Fase 4 — resumen
+- PDFKit (liviano, sin Chromium). Plantillas de contenido externalizadas a data/plantillas-certificado.json.
+- PDF con rótulo de prototipo, marca de agua "SIN VALIDEZ" y código de verificación (hash corto = token).
+- CertificadoPdfPort + PdfKitCertificadoAdapter; DescargaStorePort + InMemoryDescargaStore.
+- armarCertificado (application): resuelve campos por producto, maneja caso 3 (anio_sin_datos, no inventa)
+  y producto_no_disponible. Formatea pesos COP.
+- GenerarCertificado usa el RegistroHerramientas con requiereAutorizacion:true → CIERRA el círculo de
+  seguridad: el PDF solo se emite si puedeAccederA valida la sesión para ese afiliado.
+- Endpoints: POST /sesiones/:id/mensajes genera al llegar a 'ejecutando'; GET /descargas/:token sirve el PDF.
+- 72 tests, cobertura 95.85%. Verificado en vivo: conversación→identidad→PDF→descarga con Ollama real.
+- Muestra de PDF en .kiro/reports/muestras/certificado-muestra.pdf (evidencia para demo).
+- Decisión consciente: código de verificación = token de descarga (simplicidad prototipo). En prod
+  serían distintos (token de un solo uso/expiración; código público que solo confirma autenticidad).
 
 ## Fase 3 — resumen
 - Orquestador determinista (máquina de estados) con estado terminal de fallo técnico. LLM solo

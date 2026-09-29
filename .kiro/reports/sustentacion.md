@@ -129,8 +129,19 @@
 - Límite reconocido: la búsqueda léxica no capta sinónimos; en KB grande se migraría a embeddings
   cambiando solo el adaptador (hexagonal lo permite).
 
+## Seguridad del LLM (Fase 6, B6) — ver reporte OWASP en seguridad-owasp-llm.md
+- Principio rector: no asumo que el LLM sea infalible; las barreras duras son deterministas (código).
+- Prompt injection: defensa en capas. La barrera REAL es que el id del afiliado viene de la sesión
+  autenticada, no del texto del usuario. Un injection exitoso no filtra datos de otro afiliado (caso 5).
+- Caso 12 verificado en vivo: pedir el system prompt → no lo revela, escala.
+- Detección de injection como SEÑAL de observabilidad, no bloqueo (heurística imperfecta; decisión
+  consciente para evitar falsos positivos que rompan UX). Defendible: "no bloqueo por heurística".
+- Enmascaramiento de PII en logs: documento parcial, nombre/correo ocultos, valores sensibles marcados,
+  OTP nunca se registra. "Un log filtrado no revela información de ningún afiliado."
+- Mapeo OWASP Top 10 LLM completo en reporte dedicado (LLM01, 02, 06, 07, 08, 09, 10).
+
 ## Pruebas (20% de la rúbrica)
-- 80 pruebas al cierre de Fase 5 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
+- 93 pruebas al cierre de Fase 6 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
   + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.
 - Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).

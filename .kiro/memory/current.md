@@ -7,7 +7,18 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 5 COMPLETADA — grounding/FAQ. Casos 6 y 7 verificados con Ollama real. Siguiente: Fase 6 (seguridad LLM).**
+**Fase 6 COMPLETADA — seguridad LLM. Casos 5 y 12 verificados. Siguiente: Fase 7 (frontend).**
+
+## Fase 6 — resumen
+- Enmascaramiento de PII (enmascararObjeto): documento parcial, nombre/correo → [PII], valores → [SENSIBLE],
+  OTP eliminado del log. LoggerSeguro es el punto único de logging.
+- Detección de prompt injection (pareceInyeccion) SOLO como señal de observabilidad, no bloqueo
+  (heurística imperfecta; decisión consciente y defendible).
+- Instrucciones de sistema con guardarraíles (REGLAS_SEGURIDAD_LLM) antepuestas en redacción.
+- Barrera dura reforzada: el id del afiliado viene de la sesión autenticada, NO del texto del usuario;
+  un injection no puede filtrar datos de otro afiliado (caso 5). Verificado caso 12 en vivo (no revela prompt).
+- 93 tests, incluye aislamiento e2e (caso 5), enmascaramiento, detección. 
+- Reporte OWASP Top 10 LLM en .kiro/reports/seguridad-owasp-llm.md (evidencia clave del 10% de seguridad).
 
 ## Fase 5 — resumen
 - Grounding por búsqueda léxica con umbral (0.5), NO vector DB (ADR-002: proporcional a 8 FAQs).

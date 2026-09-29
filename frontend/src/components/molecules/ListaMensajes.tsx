@@ -6,9 +6,10 @@ import { Spinner } from '../atoms/Spinner.js';
 interface Props {
   mensajes: readonly Mensaje[];
   cargando: boolean;
+  onDescargar: (enlace: string) => void;
 }
 
-export function ListaMensajes({ mensajes, cargando }: Props): JSX.Element {
+export function ListaMensajes({ mensajes, cargando, onDescargar }: Props): JSX.Element {
   return (
     <div
       style={{
@@ -22,7 +23,7 @@ export function ListaMensajes({ mensajes, cargando }: Props): JSX.Element {
       }}
     >
       {mensajes.map((m) => (
-        <BurbujaMensaje key={m.id} mensaje={m} />
+        <BurbujaMensaje key={m.id} mensaje={m} onDescargar={onDescargar} />
       ))}
       {cargando && (
         <div style={{ alignSelf: 'flex-start', padding: '0.5rem' }}>

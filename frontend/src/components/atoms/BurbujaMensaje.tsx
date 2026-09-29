@@ -1,8 +1,9 @@
 import type { JSX } from 'react';
 import type { Mensaje } from '../../hooks/useChat.js';
 
-function esEnlaceSeguro(url: string): boolean {
-  return /^https?:\/\//.test(url);
+interface Props {
+  mensaje: Mensaje;
+  onDescargar?: (enlace: string) => void;
 }
 
 /**
@@ -10,7 +11,7 @@ function esEnlaceSeguro(url: string): boolean {
  * se interpreta como HTML, neutralizando XSS desde el modelo. El enlace de descarga se
  * valida contra protocolos peligrosos (solo http/https) antes de renderizar (R-S1).
  */
-export function BurbujaMensaje({ mensaje }: { mensaje: Mensaje }): JSX.Element {
+export function BurbujaMensaje({ mensaje, onDescargar }: Props): JSX.Element {
   const esUsuario = mensaje.autor === 'usuario';
   return (
     <div
@@ -26,11 +27,15 @@ export function BurbujaMensaje({ mensaje }: { mensaje: Mensaje }): JSX.Element {
       }}
     >
       {mensaje.texto}
-      {mensaje.enlaceDescarga && esEnlaceSeguro(mensaje.enlaceDescarga) && (
+      {mensaje.enlaceDescarga && onDescargar && (
         <div style={{ marginTop: '0.5rem' }}>
-          <a href={mensaje.enlaceDescarga} target="_blank" rel="noopener noreferrer">
+          <button
+            type="button"
+            onClick={() => onDescargar(mensaje.enlaceDescarga as string)}
+            style={{ background: 'none', border: 'none', color: '#1d4ed8', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit' }}
+          >
             Descargar certificado (PDF)
-          </a>
+          </button>
         </div>
       )}
       {mensaje.codigoVerificacion && (

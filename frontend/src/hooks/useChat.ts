@@ -17,6 +17,7 @@ export interface ChatFacade {
   iniciar(): Promise<void>;
   enviar(texto: string): Promise<void>;
   validarIdentidad(datos: DatosIdentidad): Promise<void>;
+  descargar(enlace: string): Promise<void>;
 }
 
 let contador = 0;
@@ -87,5 +88,19 @@ export function useChat(accessKey: string): ChatFacade {
     [agregar, ejecutar],
   );
 
-  return { mensajes, cargando, requiereIdentidad, error, iniciar, enviar, validarIdentidad };
+  const descargar = useCallback(
+    (enlace: string) =>
+      ejecutar(async () => {
+        const blob = await clienteRef.current.descargarPdf(enlace);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'certificado.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+      }),
+    [ejecutar],
+  );
+
+  return { mensajes, cargando, requiereIdentidad, error, iniciar, enviar, validarIdentidad, descargar };
 }

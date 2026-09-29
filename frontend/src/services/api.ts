@@ -69,7 +69,17 @@ export class ApiClient {
     });
   }
 
-  urlDescarga(enlace: string): string {
-    return enlace;
+  /**
+   * Descarga el PDF vía fetch adjuntando la clave de acceso (X-Access-Key), ya que la ruta
+   * está protegida. Un clic en <a href> no enviaría el header; por eso se descarga como blob
+   * y se entrega al navegador desde memoria, sin exponer la clave en la URL.
+   */
+  async descargarPdf(enlace: string): Promise<Blob> {
+    const ruta = enlace.startsWith('http') ? enlace : `${BASE_URL}${enlace}`;
+    const respuesta = await fetch(ruta, { headers: { 'X-Access-Key': this.accessKey } });
+    if (!respuesta.ok) {
+      throw new ApiError(respuesta.status, 'No fue posible descargar el certificado.');
+    }
+    return respuesta.blob();
   }
 }

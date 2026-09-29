@@ -9,6 +9,7 @@ import { InMemorySessionStore } from './infrastructure/persistencia/session-stor
 import { JsonAfiliadoRepository } from './infrastructure/persistencia/afiliado-repository-json.js';
 import { JsonFaqRepository } from './infrastructure/persistencia/faq-repository-json.js';
 import { ConsoleLoggerSeguro } from './infrastructure/logging/logger-seguro.js';
+import { crearMiddlewareAcceso } from './interfaces/http/middleware-acceso.js';
 import { PdfKitCertificadoAdapter } from './infrastructure/pdf/pdfkit-certificado-adapter.js';
 import { InMemoryDescargaStore } from './infrastructure/pdf/descarga-store-memoria.js';
 
@@ -43,9 +44,12 @@ const sesionesRouter = crearSesionesRouter({
   baseUrlDescarga: BASE_URL,
 });
 
+const ACCESS_KEY = process.env.PROTOTYPE_ACCESS_KEY ?? 'clave-de-prueba-local';
+
 const app = createApp({
   sesiones: sesionesRouter,
   descargas: crearDescargasRouter(descargas),
+  middlewareAcceso: crearMiddlewareAcceso(ACCESS_KEY),
 });
 
 app.listen(PORT, () => {

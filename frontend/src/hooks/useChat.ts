@@ -1,0 +1,138 @@
+import { useCallback, useRef, useState } from 'react';
+import { ApiClient, ApiError, type DatosIdentidad } from '../services/api.js';
+
+export interface Mensaje {
+  readonly id: string;
+  readonly autor: 'usuario' | 'asistente';
+  readonly texto: string;
+  readonly enlaceDescarga?: string;
+  readonly codigoVerificacion?: string;
+}
+
+export interface ChatFacade {
+  readonly mensajes: readonly Mensaje[];
+  readonly cargando: boolean;
+  readonly requiereConsentimiento: boolean;
+  readonly requiereIdentidad: boolean;
+  readonly sesionTerminada: boolean;
+  readonly error: string | undefined;
+  iniciar(): Promise<void>;
+  responderConsentimiento(acepta: boolean): Promise<void>;
+  enviar(texto: string): Promise<void>;
+  validarIdentidad(datos: DatosIdentidad): Promise<void>;
+  descargar(enlace: string): Promise<void>;
+}
+
+let contador = 0;
+function nuevoId(): string {
+  contador += 1;
+  return `m${contador}`;
+}
+
+/**
+ * Facade del chat: expone al componente una interfaz simple (mensajes, estados, acciones)
+ * y oculta la coordinación entre el estado local y el cliente del BFF. El componente no
+ * conoce el protocolo HTTP ni el manejo de sesión.
+ */
+export function useChat(accessKey: string): ChatFacade {
+  const clienteRef = useRef(new ApiClient(accessKey));
+  const sessionIdRef = useRef<string | undefined>(undefined);
+  const [mensajes, setMensajes] = useState<Mensaje[]>([]);
+  const [cargando, setCargando] = useState(false);
+  const [requiereConsentimiento, setRequiereConsentimiento] = useState(false);
+  const [requiereIdentidad, setRequiereIdentidad] = useState(false);
+  const [sesionTerminada, setSesionTerminada] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  const agregar = useCallback((mensaje: Mensaje) => {
+    setMensajes((prev) => [...prev, mensaje]);
+  }, []);
+
+  const ejecutar = useCallback(async (accion: () => Promise<void>) => {
+    setCargando(true);
+    setError(undefined);
+    try {
+      await accion();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Ocurrió un error inesperado.');
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  const iniciar = useCallback(
+    () =>
+      ejecutar(async () => {
+        const sesion = await clienteRef.current.crearSesion();
+        sessionIdRef.current = sesion.sessionId;
+        setRequiereConsentimiento(sesion.estado === 'esperando_consentimiento');
+        agregar({ id: nuevoId(), autor: 'asistente', texto: sesion.mensaje });
+      }),
+    [agregar, ejecutar],
+  );
+
+  const responderConsentimiento = useCallback(
+    (acepta: boolean) =>
+      ejecutar(async () => {
+        if (!sessionIdRef.current) return;
+        const r = await clienteRef.current.consentimiento(sessionIdRef.current, acepta);
+        setRequiereConsentimiento(false);
+        if (r.estado === 'sesion_terminada') {
+          setSesionTerminada(true);
+        }
+        agregar({ id: nuevoId(), autor: 'asistente', texto: r.mensaje });
+      }),
+    [agregar, ejecutar],
+  );
+
+  const enviar = useCallback(
+    (texto: string) =>
+      ejecutar(async () => {
+        if (!sessionIdRef.current) return;
+        agregar({ id: nuevoId(), autor: 'usuario', texto });
+        const r = await clienteRef.current.enviarMensaje(sessionIdRef.current, texto);
+        setRequiereIdentidad(r.estado === 'validando_identidad');
+        agregar({ id: nuevoId(), autor: 'asistente', texto: r.mensaje, enlaceDescarga: r.enlaceDescarga, codigoVerificacion: r.codigoVerificacion });
+      }),
+    [agregar, ejecutar],
+  );
+
+  const validarIdentidad = useCallback(
+    (datos: DatosIdentidad) =>
+      ejecutar(async () => {
+        if (!sessionIdRef.current) return;
+        await clienteRef.current.validarIdentidad(sessionIdRef.current, datos);
+        setRequiereIdentidad(false);
+        agregar({ id: nuevoId(), autor: 'asistente', texto: 'Identidad validada. ¿Qué certificado necesitas?' });
+      }),
+    [agregar, ejecutar],
+  );
+
+  const descargar = useCallback(
+    (enlace: string) =>
+      ejecutar(async () => {
+        const blob = await clienteRef.current.descargarPdf(enlace);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'certificado.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+      }),
+    [ejecutar],
+  );
+
+  return {
+    mensajes,
+    cargando,
+    requiereConsentimiento,
+    requiereIdentidad,
+    sesionTerminada,
+    error,
+    iniciar,
+    responderConsentimiento,
+    enviar,
+    validarIdentidad,
+    descargar,
+  };
+}

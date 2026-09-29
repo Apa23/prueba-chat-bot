@@ -103,7 +103,7 @@ export function useChat(accessKey: string): ChatFacade {
         if (!sessionIdRef.current) return;
         await clienteRef.current.validarIdentidad(sessionIdRef.current, datos);
         setRequiereIdentidad(false);
-        agregar({ id: nuevoId(), autor: 'asistente', texto: 'Identidad validada. ¿En qué puedo ayudarte?' });
+        agregar({ id: nuevoId(), autor: 'asistente', texto: 'Identidad validada. ¿Qué certificado necesitas?' });
       }),
     [agregar, ejecutar],
   );

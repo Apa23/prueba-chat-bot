@@ -153,8 +153,18 @@
 - Middleware de acceso en el BFF (restricción 5.6): rutas protegidas con X-Access-Key; health público.
 - Sin estado global (Redux/Zustand): para un chat es sobre-ingeniería, useState/useRef basta.
 
+## Los 12 casos de prueba (Fase 8, B.3) — ver test-cases-results.md
+- Ejecutados contra el sistema real con script reproducible. 10/12 pasan, 2 parciales documentados.
+- Transparencia como fortaleza: los casos 3 (extracción de año) y 8 (desambiguación) se reportan como
+  limitaciones de diseño con solución propuesta, usando piezas que ya existen en el código.
+- Caso 5 reforzado: la inyección se rechaza explícitamente Y la barrera de aislamiento por sesión sigue
+  activa (defensa en capas). Caso 12: no revela el system prompt.
+- Latencia ~1.2s en caliente; costo local ~$0. Defensa del "sé cuándo NO sobre-construir" también aquí:
+  no implementé extracción de parámetros ni desambiguación para acotar alcance y priorizar seguridad,
+  pero dejé el análisis de cómo se resolverían.
+
 ## Pruebas (20% de la rúbrica)
-- 99 pruebas backend al cierre de Fase 7 (frontend sin tests de UI aún; se pueden añadir en Fase 8/9) (incluye prueba de integración HTTP con supertest). Patrón: Vitest
+- 103 pruebas backend al cierre de Fase 8 + los 12 casos de prueba ejecutados y documentados (B.3). (incluye prueba de integración HTTP con supertest). Patrón: Vitest
   + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.
 - Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).

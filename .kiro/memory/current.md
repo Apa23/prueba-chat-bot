@@ -7,7 +7,17 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 7 COMPLETADA — frontend de chat React. Siguiente: Fase 8 (12 casos de prueba).**
+**Fase 8 COMPLETADA — 12 casos de prueba ejecutados y documentados. Siguiente: Fase 9 (docs, CI, video).**
+
+## Fase 8 — resumen
+- Script reproducible backend/scripts/casos-prueba.ts ejecuta los 12 casos contra el sistema real (Ollama).
+- Resultado: 10/12 pasan, 2 parciales (caso 3 y 8) documentados con análisis honesto.
+- Mejora del caso 5 (opción A): inyección detectada ahora se RECHAZA explícitamente (no genera),
+  además del logging. Capa adicional; la barrera dura sigue siendo puedeAccederA.
+- Limitaciones documentadas: extracción de parámetros (año, casos 3/9) y desambiguación (caso 8);
+  ambas con solución propuesta usando piezas que ya existen (regla anio_sin_datos, certificadosDisponiblesPara).
+- Latencia promedio mensaje ~1.2s (caliente), cold start ~5-7s. Costo local ~$0.
+- Reporte en .kiro/reports/test-cases-results.md (entregable obligatorio B.3). 103 tests.
 
 ## Fase 7 — resumen
 - Frontend React+Vite con atomic design: atoms (Boton, Spinner, BurbujaMensaje), molecules

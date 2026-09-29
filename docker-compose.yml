@@ -1,0 +1,35 @@
+# Levanta el prototipo completo con: docker compose up
+# Requisito de la prueba: la solución debe ejecutarse con un solo comando.
+#
+# Nota de arquitectura: Ollama corre en el HOST (no en un contenedor) porque en Apple
+# Silicon la aceleración de GPU no está disponible dentro de Docker. Los contenedores
+# acceden al modelo vía host.docker.internal. Esto se documenta en el README.
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: certbot-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - PROTOTYPE_ACCESS_KEY=${PROTOTYPE_ACCESS_KEY:-cambia-esta-clave}
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:7b}
+      - SESSION_TTL_MINUTES=${SESSION_TTL_MINUTES:-15}
+      - OTP_MAX_ATTEMPTS=${OTP_MAX_ATTEMPTS:-3}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data:ro
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: certbot-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

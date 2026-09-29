@@ -21,6 +21,11 @@ Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 - Formulario de identidad dedicado (OTP fuera del hilo de chat) + spinner de carga (UX).
 - Rótulo "Prototipo de evaluación – no oficial", tipografía fluida, touch targets 44px, sin marca Protección.
 - Backend 99 tests. Frontend compila. Verificación visual pendiente para el video (npm run dev:frontend).
+- Ajuste post-prueba manual: descarga de PDF por fetch+X-Access-Key (blob en memoria, URL revocada),
+  no <a href> directo (el navegador no envía el header → daba 401). Ruta sigue protegida (Opción C).
+- Backend carga .env con --env-file-if-exists (Node nativo, sin deps). Clave local en .env (no versionado):
+  PROTOTYPE_ACCESS_KEY=proteccion-demo-2026 (ingresar esa clave en la pantalla de acceso del front).
+- .env.example completo como plantilla (sin secretos reales).
 
 ## Fase 6 — resumen
 - Enmascaramiento de PII (enmascararObjeto): documento parcial, nombre/correo → [PII], valores → [SENSIBLE],

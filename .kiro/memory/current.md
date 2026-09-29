@@ -7,7 +7,20 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 6 COMPLETADA — seguridad LLM. Casos 5 y 12 verificados. Siguiente: Fase 7 (frontend).**
+**Fase 7 COMPLETADA — frontend de chat React. Siguiente: Fase 8 (12 casos de prueba).**
+
+## Fase 7 — resumen
+- Frontend React+Vite con atomic design: atoms (Boton, Spinner, BurbujaMensaje), molecules
+  (ListaMensajes, EntradaChat, FormularioIdentidad), organisms (VentanaChat, PantallaAcceso), App.
+- Hook useChat con patrón FACADE: expone mensajes/estados/acciones, oculta HTTP y sesión.
+- Seguridad (skill react-security aplicada): texto plano (JSX escapa, sin dangerouslySetInnerHTML),
+  href validado contra javascript:, rel=noopener, clave de acceso en memoria (no localStorage),
+  OTP como type=password.
+- Middleware de acceso en el BFF (X-Access-Key vs PROTOTYPE_ACCESS_KEY); health check queda público.
+  Verificado: sin clave→401, con clave→200. CORS habilitado para el front.
+- Formulario de identidad dedicado (OTP fuera del hilo de chat) + spinner de carga (UX).
+- Rótulo "Prototipo de evaluación – no oficial", tipografía fluida, touch targets 44px, sin marca Protección.
+- Backend 99 tests. Frontend compila. Verificación visual pendiente para el video (npm run dev:frontend).
 
 ## Fase 6 — resumen
 - Enmascaramiento de PII (enmascararObjeto): documento parcial, nombre/correo → [PII], valores → [SENSIBLE],

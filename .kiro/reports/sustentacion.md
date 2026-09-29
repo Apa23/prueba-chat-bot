@@ -140,8 +140,17 @@
   OTP nunca se registra. "Un log filtrado no revela información de ningún afiliado."
 - Mapeo OWASP Top 10 LLM completo en reporte dedicado (LLM01, 02, 06, 07, 08, 09, 10).
 
+## Frontend de chat (Fase 7, B7)
+- React + Vite, atomic design (atoms/molecules/organisms). Hook useChat con patrón facade:
+  el componente no conoce HTTP ni sesión, solo consume una interfaz simple.
+- Seguridad de renderizado: texto plano (JSX escapa el contenido del LLM → sin XSS), nunca
+  dangerouslySetInnerHTML. Enlace de descarga validado contra javascript: y con rel=noopener.
+- Clave de acceso en memoria, no en localStorage (R-S6). OTP como campo password, fuera del hilo.
+- Middleware de acceso en el BFF (restricción 5.6): rutas protegidas con X-Access-Key; health público.
+- Sin estado global (Redux/Zustand): para un chat es sobre-ingeniería, useState/useRef basta.
+
 ## Pruebas (20% de la rúbrica)
-- 93 pruebas al cierre de Fase 6 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
+- 99 pruebas backend al cierre de Fase 7 (frontend sin tests de UI aún; se pueden añadir en Fase 8/9) (incluye prueba de integración HTTP con supertest). Patrón: Vitest
   + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.
 - Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).

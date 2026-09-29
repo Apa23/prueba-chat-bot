@@ -1,6 +1,7 @@
 import type { LlmPort } from '../llm/llm-port.js';
 import type { Sesion } from '../../domain/sesion.js';
 import { datosFaltantesPara, type DatosRecolectados } from '../../domain/certificado.js';
+import type { ResponderFaq } from '../faq/responder-faq.js';
 import { type EstadoConversacion } from './estados.js';
 
 export interface RespuestaOrquestador {
@@ -16,7 +17,10 @@ const MENSAJE_AUTORIZACION_DATOS =
   '¿Qué certificado necesitas?';
 
 export class Orquestador {
-  constructor(private readonly llm: LlmPort) {}
+  constructor(
+    private readonly llm: LlmPort,
+    private readonly responderFaq: ResponderFaq,
+  ) {}
 
   async procesarMensaje(
     estado: EstadoConversacion,
@@ -53,9 +57,15 @@ export class Orquestador {
     }
 
     if (intencion.tipo === 'pregunta_frecuente') {
-      // El grounding real (RAG) y la política estaDentroDeAlcance se conectan en Fase 5.
-      const respuesta = await this.llm.redactar('Responde la pregunta frecuente con su fuente.', mensajeUsuario);
-      return { estado: { ...estado, nombre: 'identificando_intencion' }, mensaje: respuesta };
+      const faq = await this.responderFaq.ejecutar(mensajeUsuario, { sesion, ahora: Date.now() });
+      if (!faq.dentroDeAlcance) {
+        return this.escalar('Esta consulta está fuera de mi alcance. Te ofrezco un asesor humano.');
+      }
+      const redactada = await this.llm.redactar(
+        'Responde al usuario usando SOLO esta información y cita la fuente al final.',
+        `${faq.respuesta}\n\nFuente: ${faq.fuente}`,
+      );
+      return { estado: { ...estado, nombre: 'identificando_intencion' }, mensaje: redactada };
     }
 
     if (intencion.tipo === 'desconocida') {

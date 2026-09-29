@@ -3,9 +3,11 @@ import { crearSesionesRouter } from './interfaces/http/sesiones-router.js';
 import { crearDescargasRouter } from './interfaces/http/descargas-router.js';
 import { Orquestador } from './application/orquestador/orquestador.js';
 import { GenerarCertificado } from './application/certificados/generar-certificado.js';
+import { ResponderFaq } from './application/faq/responder-faq.js';
 import { OllamaLlmAdapter } from './infrastructure/llm/ollama-adapter.js';
 import { InMemorySessionStore } from './infrastructure/persistencia/session-store-memoria.js';
 import { JsonAfiliadoRepository } from './infrastructure/persistencia/afiliado-repository-json.js';
+import { JsonFaqRepository } from './infrastructure/persistencia/faq-repository-json.js';
 import { PdfKitCertificadoAdapter } from './infrastructure/pdf/pdfkit-certificado-adapter.js';
 import { InMemoryDescargaStore } from './infrastructure/pdf/descarga-store-memoria.js';
 
@@ -19,7 +21,9 @@ const llm = new OllamaLlmAdapter({
   baseUrl: process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434',
   modelo: process.env.OLLAMA_MODEL ?? 'qwen2.5:7b',
 });
-const orquestador = new Orquestador(llm);
+const faqRepo = new JsonFaqRepository(RUTA_DATOS);
+const responderFaq = new ResponderFaq(faqRepo);
+const orquestador = new Orquestador(llm, responderFaq);
 const store = new InMemorySessionStore();
 const afiliados = new JsonAfiliadoRepository(RUTA_DATOS);
 const pdf = new PdfKitCertificadoAdapter(RUTA_PLANTILLAS);

@@ -7,6 +7,8 @@ import { Orquestador } from '../../src/application/orquestador/orquestador.js';
 import { LlmMock } from '../../src/infrastructure/llm/llm-mock.js';
 import { InMemorySessionStore } from '../../src/infrastructure/persistencia/session-store-memoria.js';
 import { GenerarCertificado } from '../../src/application/certificados/generar-certificado.js';
+import { ResponderFaq } from '../../src/application/faq/responder-faq.js';
+import type { FaqRepositoryPort } from '../../src/application/puertos/faq-repository.js';
 import { PdfKitCertificadoAdapter } from '../../src/infrastructure/pdf/pdfkit-certificado-adapter.js';
 import { InMemoryDescargaStore } from '../../src/infrastructure/pdf/descarga-store-memoria.js';
 import { crearDescargasRouter } from '../../src/interfaces/http/descargas-router.js';
@@ -31,6 +33,12 @@ const AF_001: Afiliado = {
   },
 };
 
+const faqStub: FaqRepositoryPort = {
+  listar: () => [
+    { pregunta: '¿Para qué sirve el certificado tributario?', respuesta: 'Resume aportes y saldo.', fuente: 'Base de conocimiento' },
+  ],
+};
+
 const afiliadosStub: AfiliadoRepositoryPort = {
   async buscarPorDocumento(tipo, numero) {
     return tipo === AF_001.tipoDocumento && numero === AF_001.numeroDocumento ? AF_001 : undefined;
@@ -48,7 +56,7 @@ function construirApp(): Express {
     descargas,
   );
   const router = crearSesionesRouter({
-    orquestador: new Orquestador(new LlmMock()),
+    orquestador: new Orquestador(new LlmMock(), new ResponderFaq(faqStub)),
     store: new InMemorySessionStore(),
     afiliados: afiliadosStub,
     generarCertificado,
@@ -204,7 +212,7 @@ describe('Flujo de sesiones (integración HTTP)', () => {
     let t = 1_000_000;
     const descargas = new InMemoryDescargaStore();
     const router = crearSesionesRouter({
-      orquestador: new Orquestador(new LlmMock()),
+      orquestador: new Orquestador(new LlmMock(), new ResponderFaq(faqStub)),
       store: new InMemorySessionStore(),
       afiliados: afiliadosStub,
       generarCertificado: new GenerarCertificado(afiliadosStub, new PdfKitCertificadoAdapter(rutaPlantillas), descargas),

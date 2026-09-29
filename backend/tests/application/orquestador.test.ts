@@ -3,12 +3,20 @@ import { Orquestador } from '../../src/application/orquestador/orquestador.js';
 import { estadoInicial } from '../../src/application/orquestador/estados.js';
 import { LlmMock } from '../../src/infrastructure/llm/llm-mock.js';
 import type { LlmPort } from '../../src/application/llm/llm-port.js';
+import { ResponderFaq } from '../../src/application/faq/responder-faq.js';
+import type { FaqRepositoryPort } from '../../src/application/puertos/faq-repository.js';
 import { crearSesion, marcarIdentidadValidada } from '../../src/domain/sesion.js';
 
 const T0 = 1_000_000;
 
+const faqStub: FaqRepositoryPort = {
+  listar: () => [
+    { pregunta: '¿Para qué sirve el certificado tributario?', respuesta: 'Resume aportes y saldo del año.', fuente: 'Base de conocimiento' },
+  ],
+};
+
 function orquestadorConMock(): Orquestador {
-  return new Orquestador(new LlmMock());
+  return new Orquestador(new LlmMock(), new ResponderFaq(faqStub));
 }
 
 function sesionSinValidar() {
@@ -116,7 +124,7 @@ describe('Orquestador.procesarMensaje', () => {
       },
       redactar: async () => 'x',
     };
-    const orq = new Orquestador(llmQueFalla);
+    const orq = new Orquestador(llmQueFalla, new ResponderFaq(faqStub));
     const estado = { nombre: 'identificando_intencion' as const, datosRecolectados: {} };
 
     // Act

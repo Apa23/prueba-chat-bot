@@ -23,6 +23,7 @@ relevante presento (1) la decisión a tomar, (2) alternativas reales con tradeof
 - Señalar riesgos antes de que cuesten tiempo (especialmente en una sola noche de trabajo).
 - Preferir soluciones que el candidato entiende y puede defender sobre soluciones "impresionantes" que no domina.
 - Mantener actualizada la memoria (.kiro/memory) y los reportes (.kiro/reports) como evidencia.
+- Al terminar cada fase, hacer `git push` al remoto (github.com/Apa23/prueba-chat-bot).
 
 ## Decisiones generales ya tomadas (ver .kiro/memory/definition.md para el detalle)
 

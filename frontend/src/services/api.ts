@@ -20,6 +20,7 @@ export interface RespuestaMensaje {
 export interface RespuestaSesion {
   sessionId: string;
   mensaje: string;
+  estado: string;
 }
 
 export interface DatosIdentidad {
@@ -66,6 +67,13 @@ export class ApiClient {
     return this.request(`/sesiones/${sessionId}/identidad`, {
       method: 'POST',
       body: JSON.stringify(datos),
+    });
+  }
+
+  consentimiento(sessionId: string, acepta: boolean): Promise<{ estado: string; mensaje: string }> {
+    return this.request(`/sesiones/${sessionId}/consentimiento`, {
+      method: 'POST',
+      body: JSON.stringify({ acepta }),
     });
   }
 

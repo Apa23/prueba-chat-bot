@@ -12,9 +12,12 @@ export interface Mensaje {
 export interface ChatFacade {
   readonly mensajes: readonly Mensaje[];
   readonly cargando: boolean;
+  readonly requiereConsentimiento: boolean;
   readonly requiereIdentidad: boolean;
+  readonly sesionTerminada: boolean;
   readonly error: string | undefined;
   iniciar(): Promise<void>;
+  responderConsentimiento(acepta: boolean): Promise<void>;
   enviar(texto: string): Promise<void>;
   validarIdentidad(datos: DatosIdentidad): Promise<void>;
   descargar(enlace: string): Promise<void>;
@@ -36,7 +39,9 @@ export function useChat(accessKey: string): ChatFacade {
   const sessionIdRef = useRef<string | undefined>(undefined);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [cargando, setCargando] = useState(false);
+  const [requiereConsentimiento, setRequiereConsentimiento] = useState(false);
   const [requiereIdentidad, setRequiereIdentidad] = useState(false);
+  const [sesionTerminada, setSesionTerminada] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const agregar = useCallback((mensaje: Mensaje) => {
@@ -60,7 +65,22 @@ export function useChat(accessKey: string): ChatFacade {
       ejecutar(async () => {
         const sesion = await clienteRef.current.crearSesion();
         sessionIdRef.current = sesion.sessionId;
+        setRequiereConsentimiento(sesion.estado === 'esperando_consentimiento');
         agregar({ id: nuevoId(), autor: 'asistente', texto: sesion.mensaje });
+      }),
+    [agregar, ejecutar],
+  );
+
+  const responderConsentimiento = useCallback(
+    (acepta: boolean) =>
+      ejecutar(async () => {
+        if (!sessionIdRef.current) return;
+        const r = await clienteRef.current.consentimiento(sessionIdRef.current, acepta);
+        setRequiereConsentimiento(false);
+        if (r.estado === 'sesion_terminada') {
+          setSesionTerminada(true);
+        }
+        agregar({ id: nuevoId(), autor: 'asistente', texto: r.mensaje });
       }),
     [agregar, ejecutar],
   );
@@ -102,5 +122,17 @@ export function useChat(accessKey: string): ChatFacade {
     [ejecutar],
   );
 
-  return { mensajes, cargando, requiereIdentidad, error, iniciar, enviar, validarIdentidad, descargar };
+  return {
+    mensajes,
+    cargando,
+    requiereConsentimiento,
+    requiereIdentidad,
+    sesionTerminada,
+    error,
+    iniciar,
+    responderConsentimiento,
+    enviar,
+    validarIdentidad,
+    descargar,
+  };
 }

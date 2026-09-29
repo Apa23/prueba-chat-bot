@@ -3,6 +3,7 @@ import { useChat } from '../../hooks/useChat.js';
 import { ListaMensajes } from '../molecules/ListaMensajes.js';
 import { EntradaChat } from '../molecules/EntradaChat.js';
 import { FormularioIdentidad } from '../molecules/FormularioIdentidad.js';
+import { ConsentimientoDatos } from '../molecules/ConsentimientoDatos.js';
 
 export function VentanaChat({ accessKey }: { accessKey: string }): JSX.Element {
   const chat = useChat(accessKey);
@@ -24,11 +25,15 @@ export function VentanaChat({ accessKey }: { accessKey: string }): JSX.Element {
         </p>
       )}
 
-      {chat.requiereIdentidad ? (
+      {chat.requiereConsentimiento ? (
+        <ConsentimientoDatos onResponder={chat.responderConsentimiento} deshabilitado={chat.cargando} />
+      ) : chat.requiereIdentidad ? (
         <FormularioIdentidad onValidar={chat.validarIdentidad} deshabilitado={chat.cargando} />
       ) : null}
 
-      <EntradaChat onEnviar={chat.enviar} deshabilitado={chat.cargando} />
+      {!chat.sesionTerminada && !chat.requiereConsentimiento ? (
+        <EntradaChat onEnviar={chat.enviar} deshabilitado={chat.cargando} />
+      ) : null}
     </div>
   );
 }

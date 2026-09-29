@@ -41,6 +41,10 @@ relevante presento (1) la decisión a tomar, (2) alternativas reales con tradeof
 ## Principios de diseño para el código
 
 - SOLID + Clean Code. Separación de capas (Clean/Hexagonal Architecture).
+- **Comentarios: solo comentar aquello que NO se pueda inferir leyendo el código.** El
+  código debe ser autoexplicativo (nombres descriptivos). No comentar lo que el nombre de
+  una función, variable o tipo ya dice. Reservar comentarios para el "por qué" no obvio:
+  decisiones de diseño, invariantes de seguridad, o contexto del negocio que no se deduce.
 - El LLM nunca accede a la fuente de datos directamente: solo vía herramientas con
   validación y autorización por sesión.
 - Seguridad de LLM (OWASP Top 10 para LLM): anti prompt-injection, aislamiento de datos

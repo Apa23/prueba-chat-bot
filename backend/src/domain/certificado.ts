@@ -39,3 +39,30 @@ export const CATALOGO_CERTIFICADOS: Readonly<Record<CodigoCertificado, TipoCerti
     datosRequeridos: ['anio'],
   },
 };
+
+export interface DatosRecolectados {
+  readonly anioGravable?: string;
+  readonly anio?: string;
+  readonly tipoCesantias?: string;
+}
+
+const LLAVE_DE_REQUISITO: Readonly<Record<RequisitoDato, keyof DatosRecolectados>> = {
+  anio_gravable: 'anioGravable',
+  anio: 'anio',
+  tipo_cesantias: 'tipoCesantias',
+};
+
+/**
+ * Datos que aún faltan para emitir un certificado (caso de prueba 2: certificado
+ * tributario sin año → falta 'anio_gravable'). Se apoya en el catálogo como única
+ * fuente de verdad de los requisitos, evitando duplicar la regla por tipo.
+ */
+export function datosFaltantesPara(
+  codigo: CodigoCertificado,
+  datos: DatosRecolectados,
+): readonly RequisitoDato[] {
+  return CATALOGO_CERTIFICADOS[codigo].datosRequeridos.filter((requisito) => {
+    const valor = datos[LLAVE_DE_REQUISITO[requisito]];
+    return valor === undefined || valor.trim() === '';
+  });
+}

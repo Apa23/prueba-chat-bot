@@ -7,7 +7,18 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 8 COMPLETADA — 12 casos de prueba ejecutados y documentados. Siguiente: Fase 9 (docs, CI, video).**
+**Fase 9 EN CURSO — documentación y cierre. Falta: video (lo graba el candidato) y verificar docker compose.**
+
+## Fase 9 — resumen
+- Diagramas C4 nivel 1 y 2 en Mermaid (.kiro/reports/c4-diagramas.md).
+- Documento de solución completo (docs/documento-de-solucion.md): contexto, arquitectura, ADRs, NFR,
+  riesgos, camino a producción en AWS (Cognito, ECS Fargate, Bedrock, Redis, S3, WAF, CloudWatch).
+- Declaración de uso de IA (docs/declaracion-uso-ia.md): herramientas, qué validé/corregí, decisión
+  donde no seguí la IA (descarga segura vs simple).
+- README actualizado con estado real, ejecución, pruebas, estructura.
+- Pipeline CI (.github/workflows/ci.yml): build+test, SCA (npm audit --omit=dev), secretos (Gitleaks),
+  SAST (CodeQL). SCA coherente con decisión de Fase 1 (tolerar dev-only).
+- 103 tests. Pendiente: grabar video (candidato), verificar docker compose up.
 
 ## Fase 8 — resumen
 - Script reproducible backend/scripts/casos-prueba.ts ejecuta los 12 casos contra el sistema real (Ollama).

@@ -68,7 +68,7 @@ export function crearSesionesRouter(deps: DependenciasSesiones): Router {
 
     const conversacion = { ...estado.conversacion, nombre: 'identificando_intencion' as const };
     deps.store.guardar(sessionId, { ...estado, conversacion });
-    res.status(200).json({ estado: 'identificando_intencion', mensaje: '¿Qué certificado necesitas?' });
+    res.status(200).json({ estado: 'identificando_intencion', mensaje: '¿En qué puedo ayudarte?' });
   });
 
   router.post('/:id/mensajes', async (req: Request, res: Response) => {

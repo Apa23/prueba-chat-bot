@@ -1,0 +1,20 @@
+graph TB
+    afiliado["Afiliado ficticio (usuario del prototipo)"]
+    panel["Panel evaluador (acceso con clave)"]
+    asesor["Asesor humano (simulado)"]
+    sistema["Asistente de Certificados<br/>Prototipo conversacional con IA:<br/>valida identidad, genera certificados PDF,<br/>responde FAQs con grounding"]
+    ollama["Ollama (LLM local) qwen2.5:7b<br/>interpreta lenguaje / redacta"]
+    datos["Datos ficticios (JSON)<br/>afiliados, productos, FAQs"]
+
+    afiliado -->|"conversa, solicita certificados"| sistema
+    panel -->|"accede con clave de prototipo"| sistema
+    sistema -->|"clasifica intención / redacta"| ollama
+    sistema -->|"lee vía herramientas controladas"| datos
+    sistema -.->|"escala casos fuera de alcance"| asesor
+
+    classDef sys fill:#374151,color:#fff,stroke:#1f2937;
+    classDef ext fill:#e5e7eb,color:#111,stroke:#9ca3af;
+    classDef person fill:#dbeafe,color:#111,stroke:#60a5fa;
+    class sistema sys;
+    class ollama,datos ext;
+    class afiliado,panel,asesor person;

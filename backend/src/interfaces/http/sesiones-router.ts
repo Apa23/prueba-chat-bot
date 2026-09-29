@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import type { Orquestador } from '../../application/orquestador/orquestador.js';
 import type { SessionStorePort } from '../../application/puertos/session-store.js';
 import type { AfiliadoRepositoryPort } from '../../application/puertos/afiliado-repository.js';
+import type { GenerarCertificado } from '../../application/certificados/generar-certificado.js';
 import { crearSesion, marcarIdentidadValidada, registrarIntentoOtpFallido, estaExpirada, estaBloqueadaPorOtp } from '../../domain/sesion.js';
 import { validarIdentidad } from '../../domain/identidad.js';
 import { estadoInicial } from '../../application/orquestador/estados.js';
@@ -12,9 +13,11 @@ export interface DependenciasSesiones {
   readonly orquestador: Orquestador;
   readonly store: SessionStorePort;
   readonly afiliados: AfiliadoRepositoryPort;
+  readonly generarCertificado: GenerarCertificado;
   readonly otpValido: string;
   readonly ttlMinutos: number;
   readonly maxIntentosOtp: number;
+  readonly baseUrlDescarga: string;
   readonly ahora?: () => number;
 }
 
@@ -60,6 +63,36 @@ export function crearSesionesRouter(deps: DependenciasSesiones): Router {
     const resultado = await deps.orquestador.procesarMensaje(estado.conversacion, parseo.data.mensaje, estado.sesion);
     const sesionRefrescada = { ...estado.sesion, ultimaActividad: ahora() };
     deps.store.guardar(sessionId, { sesion: sesionRefrescada, conversacion: resultado.estado });
+
+    if (resultado.estado.nombre === 'ejecutando' && resultado.estado.certificadoEnCurso) {
+      const generacion = await deps.generarCertificado.ejecutar(
+        sesionRefrescada.afiliadoAutorizadoId ?? '',
+        resultado.estado.certificadoEnCurso,
+        {
+          anioGravable: resultado.estado.datosRecolectados.anioGravable,
+          anio: resultado.estado.datosRecolectados.anio,
+        },
+        { sesion: sesionRefrescada, ahora: ahora() },
+      );
+
+      if (!generacion.ok) {
+        return res.status(200).json({
+          mensaje: 'No fue posible generar el certificado con los datos disponibles.',
+          estado: 'completado',
+          motivo: generacion.motivo,
+        });
+      }
+
+      const estadoFinal = { ...resultado.estado, nombre: 'completado' as const };
+      deps.store.guardar(sessionId, { sesion: sesionRefrescada, conversacion: estadoFinal });
+      return res.status(200).json({
+        mensaje: 'Tu certificado está listo.',
+        estado: 'completado',
+        enlaceDescarga: `${deps.baseUrlDescarga}/descargas/${generacion.token}`,
+        codigoVerificacion: generacion.codigoVerificacion,
+      });
+    }
+
     res.status(200).json({ mensaje: resultado.mensaje, estado: resultado.estado.nombre });
   });
 

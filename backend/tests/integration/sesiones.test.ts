@@ -6,8 +6,19 @@ import { crearSesionesRouter } from '../../src/interfaces/http/sesiones-router.j
 import { Orquestador } from '../../src/application/orquestador/orquestador.js';
 import { LlmMock } from '../../src/infrastructure/llm/llm-mock.js';
 import { InMemorySessionStore } from '../../src/infrastructure/persistencia/session-store-memoria.js';
+import { GenerarCertificado } from '../../src/application/certificados/generar-certificado.js';
+import { PdfKitCertificadoAdapter } from '../../src/infrastructure/pdf/pdfkit-certificado-adapter.js';
+import { InMemoryDescargaStore } from '../../src/infrastructure/pdf/descarga-store-memoria.js';
+import { crearDescargasRouter } from '../../src/interfaces/http/descargas-router.js';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import type { AfiliadoRepositoryPort } from '../../src/application/puertos/afiliado-repository.js';
 import type { Afiliado } from '../../src/domain/afiliado.js';
+
+const rutaPlantillas = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../data/plantillas-certificado.json',
+);
 
 const AF_001: Afiliado = {
   id: 'AF-001',
@@ -30,15 +41,23 @@ const afiliadosStub: AfiliadoRepositoryPort = {
 };
 
 function construirApp(): Express {
+  const descargas = new InMemoryDescargaStore();
+  const generarCertificado = new GenerarCertificado(
+    afiliadosStub,
+    new PdfKitCertificadoAdapter(rutaPlantillas),
+    descargas,
+  );
   const router = crearSesionesRouter({
     orquestador: new Orquestador(new LlmMock()),
     store: new InMemorySessionStore(),
     afiliados: afiliadosStub,
+    generarCertificado,
     otpValido: '123456',
     ttlMinutos: 15,
     maxIntentosOtp: 3,
+    baseUrlDescarga: 'http://localhost:3001',
   });
-  return createApp(router);
+  return createApp({ sesiones: router, descargas: crearDescargasRouter(descargas) });
 }
 
 describe('Flujo de sesiones (integración HTTP)', () => {
@@ -100,7 +119,7 @@ describe('Flujo de sesiones (integración HTTP)', () => {
     expect(res.body.estado).toBe('validando_identidad');
   });
 
-  it('should reach executing state after identity validation and certificate request', async () => {
+  it('should generate a certificate and return a download link after identity validation', async () => {
     // Arrange
     const creada = await request(app).post('/sesiones').send();
     const id = creada.body.sessionId;
@@ -115,7 +134,30 @@ describe('Flujo de sesiones (integración HTTP)', () => {
 
     // Assert
     expect(res.status).toBe(200);
-    expect(res.body.estado).toBe('ejecutando');
+    expect(res.body.estado).toBe('completado');
+    expect(res.body.enlaceDescarga).toContain('/descargas/');
+    expect(res.body.codigoVerificacion).toHaveLength(10);
+  });
+
+  it('should download a valid PDF from the generated link (flujo completo B4)', async () => {
+    // Arrange
+    const creada = await request(app).post('/sesiones').send();
+    const id = creada.body.sessionId;
+    await request(app)
+      .post(`/sesiones/${id}/identidad`)
+      .send({ tipoDocumento: 'CC', numeroDocumento: 'PRUEBA-0001', otp: '123456' });
+    const generado = await request(app)
+      .post(`/sesiones/${id}/mensajes`)
+      .send({ mensaje: 'certificado de afiliación' });
+    const token = generado.body.codigoVerificacion;
+
+    // Act
+    const descarga = await request(app).get(`/descargas/${token}`);
+
+    // Assert
+    expect(descarga.status).toBe(200);
+    expect(descarga.headers['content-type']).toBe('application/pdf');
+    expect(descarga.body.subarray(0, 5).toString('ascii')).toBe('%PDF-');
   });
 
   it('should return 404 for messages on an unknown session', async () => {
@@ -160,16 +202,19 @@ describe('Flujo de sesiones (integración HTTP)', () => {
   it('should expire the session after TTL of inactivity', async () => {
     // Arrange: reloj controlado que salta 16 minutos entre creación y mensaje
     let t = 1_000_000;
+    const descargas = new InMemoryDescargaStore();
     const router = crearSesionesRouter({
       orquestador: new Orquestador(new LlmMock()),
       store: new InMemorySessionStore(),
       afiliados: afiliadosStub,
+      generarCertificado: new GenerarCertificado(afiliadosStub, new PdfKitCertificadoAdapter(rutaPlantillas), descargas),
       otpValido: '123456',
       ttlMinutos: 15,
       maxIntentosOtp: 3,
+      baseUrlDescarga: 'http://localhost:3001',
       ahora: () => t,
     });
-    const appReloj = createApp(router);
+    const appReloj = createApp({ sesiones: router, descargas: crearDescargasRouter(descargas) });
     const creada = await request(appReloj).post('/sesiones').send();
     t += 16 * 60 * 1000;
 

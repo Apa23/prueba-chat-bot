@@ -131,6 +131,7 @@ describe('Flujo de sesiones (integración HTTP)', () => {
   it('should require identity before delivering a certificate', async () => {
     // Arrange
     const creada = await request(app).post('/sesiones').send();
+    await request(app).post(`/sesiones/${creada.body.sessionId}/consentimiento`).send({ acepta: true });
 
     // Act
     const res = await request(app)
@@ -146,6 +147,7 @@ describe('Flujo de sesiones (integración HTTP)', () => {
     // Arrange
     const creada = await request(app).post('/sesiones').send();
     const id = creada.body.sessionId;
+    await request(app).post(`/sesiones/${id}/consentimiento`).send({ acepta: true });
     await request(app)
       .post(`/sesiones/${id}/identidad`)
       .send({ tipoDocumento: 'CC', numeroDocumento: 'PRUEBA-0001', otp: '123456' });
@@ -166,6 +168,7 @@ describe('Flujo de sesiones (integración HTTP)', () => {
     // Arrange
     const creada = await request(app).post('/sesiones').send();
     const id = creada.body.sessionId;
+    await request(app).post(`/sesiones/${id}/consentimiento`).send({ acepta: true });
     await request(app)
       .post(`/sesiones/${id}/identidad`)
       .send({ tipoDocumento: 'CC', numeroDocumento: 'PRUEBA-0001', otp: '123456' });
@@ -181,6 +184,41 @@ describe('Flujo de sesiones (integración HTTP)', () => {
     expect(descarga.status).toBe(200);
     expect(descarga.headers['content-type']).toBe('application/pdf');
     expect(descarga.body.subarray(0, 5).toString('ascii')).toBe('%PDF-');
+  });
+
+  it('should ask for consent when a session is created', async () => {
+    // Act
+    const res = await request(app).post('/sesiones').send();
+
+    // Assert
+    expect(res.body.estado).toBe('esperando_consentimiento');
+    expect(res.body.mensaje).toContain('¿autorizas el tratamiento');
+  });
+
+  it('should continue to the chat when consent is accepted', async () => {
+    // Arrange
+    const creada = await request(app).post('/sesiones').send();
+
+    // Act
+    const res = await request(app).post(`/sesiones/${creada.body.sessionId}/consentimiento`).send({ acepta: true });
+
+    // Assert
+    expect(res.status).toBe(200);
+    expect(res.body.estado).toBe('identificando_intencion');
+  });
+
+  it('should terminate the session when consent is rejected', async () => {
+    // Arrange
+    const creada = await request(app).post('/sesiones').send();
+    const id = creada.body.sessionId;
+
+    // Act
+    const rechazo = await request(app).post(`/sesiones/${id}/consentimiento`).send({ acepta: false });
+    const trasRechazo = await request(app).post(`/sesiones/${id}/mensajes`).send({ mensaje: 'hola' });
+
+    // Assert
+    expect(rechazo.body.estado).toBe('sesion_terminada');
+    expect(trasRechazo.status).toBe(404); // sesión eliminada
   });
 
   it('should return 404 for messages on an unknown session', async () => {
@@ -226,6 +264,7 @@ describe('Flujo de sesiones (integración HTTP)', () => {
     // Arrange: sesión valida identidad como AF-001
     const creada = await request(app).post('/sesiones').send();
     const id = creada.body.sessionId;
+    await request(app).post(`/sesiones/${id}/consentimiento`).send({ acepta: true });
     await request(app)
       .post(`/sesiones/${id}/identidad`)
       .send({ tipoDocumento: 'CC', numeroDocumento: 'PRUEBA-0001', otp: '123456' });

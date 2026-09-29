@@ -22,6 +22,7 @@ export interface DependenciasSesiones {
 }
 
 const mensajeSchema = z.object({ mensaje: z.string().min(1).max(1000) });
+const consentimientoSchema = z.object({ acepta: z.boolean() });
 const identidadSchema = z.object({
   tipoDocumento: z.enum(['CC', 'CE']),
   numeroDocumento: z.string().min(1).max(50),
@@ -43,7 +44,31 @@ export function crearSesionesRouter(deps: DependenciasSesiones): Router {
     deps.store.crear({ sesion, conversacion });
     const resultado = await deps.orquestador.procesarMensaje(conversacion, '', sesion);
     deps.store.guardar(id, { sesion, conversacion: resultado.estado });
-    res.status(201).json({ sessionId: id, mensaje: resultado.mensaje });
+    res.status(201).json({ sessionId: id, mensaje: resultado.mensaje, estado: resultado.estado.nombre });
+  });
+
+  router.post('/:id/consentimiento', (req: Request, res: Response) => {
+    const sessionId = String(req.params.id);
+    const parseo = consentimientoSchema.safeParse(req.body);
+    if (!parseo.success) {
+      return error(res, 400, 'entrada_invalida', 'Debes indicar si aceptas o no.');
+    }
+    const estado = deps.store.obtener(sessionId);
+    if (!estado) {
+      return error(res, 404, 'sesion_no_encontrada', 'La sesión no existe.');
+    }
+
+    if (!parseo.data.acepta) {
+      deps.store.eliminar(sessionId);
+      return res.status(200).json({
+        estado: 'sesion_terminada',
+        mensaje: 'Has rechazado el tratamiento de datos. La sesión ha finalizado.',
+      });
+    }
+
+    const conversacion = { ...estado.conversacion, nombre: 'identificando_intencion' as const };
+    deps.store.guardar(sessionId, { ...estado, conversacion });
+    res.status(200).json({ estado: 'identificando_intencion', mensaje: '¿Qué certificado necesitas?' });
   });
 
   router.post('/:id/mensajes', async (req: Request, res: Response) => {

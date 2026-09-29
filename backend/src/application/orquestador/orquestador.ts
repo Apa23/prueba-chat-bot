@@ -18,8 +18,13 @@ const MENSAJE_FALLO_TECNICO =
   'En este momento no puedo procesar tu solicitud por un problema técnico. Por favor intenta más tarde.';
 
 const MENSAJE_AUTORIZACION_DATOS =
-  'Para atenderte, autorizas el tratamiento de tus datos personales conforme a la política de privacidad. ' +
-  '¿Qué certificado necesitas?';
+  'Para atenderte, ¿autorizas el tratamiento de tus datos personales conforme a la política de privacidad?';
+
+const MENSAJE_SESION_TERMINADA =
+  'Has rechazado el tratamiento de datos. La sesión ha finalizado.';
+
+const MENSAJE_REQUIERE_CONSENTIMIENTO =
+  'Para continuar, primero debes autorizar el tratamiento de tus datos personales.';
 
 export class Orquestador {
   constructor(
@@ -52,11 +57,19 @@ export class Orquestador {
       return { estado, mensaje: MENSAJE_FALLO_TECNICO };
     }
 
+    if (estado.nombre === 'sesion_terminada') {
+      return { estado, mensaje: MENSAJE_SESION_TERMINADA };
+    }
+
     if (estado.nombre === 'inicio') {
       return {
-        estado: { ...estado, nombre: 'identificando_intencion' },
+        estado: { ...estado, nombre: 'esperando_consentimiento' },
         mensaje: MENSAJE_AUTORIZACION_DATOS,
       };
+    }
+
+    if (estado.nombre === 'esperando_consentimiento') {
+      return { estado, mensaje: MENSAJE_REQUIERE_CONSENTIMIENTO };
     }
 
     const intencion = await this.llm.clasificarIntencion(mensajeUsuario);

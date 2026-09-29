@@ -2,12 +2,14 @@ import type { CodigoCertificado } from '../../domain/certificado.js';
 
 export type NombreEstado =
   | 'inicio'
+  | 'esperando_consentimiento'
   | 'identificando_intencion'
   | 'validando_identidad'
   | 'recolectando_datos'
   | 'ejecutando'
   | 'completado'
   | 'escalado_humano'
+  | 'sesion_terminada'
   | 'fallo_tecnico';
 
 /**

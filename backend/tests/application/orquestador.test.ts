@@ -28,7 +28,7 @@ function sesionValidada(afiliadoId = 'AF-001') {
 }
 
 describe('Orquestador.procesarMensaje', () => {
-  it('should ask for data authorization and intent from the initial state', async () => {
+  it('should ask for data-processing consent from the initial state', async () => {
     // Arrange
     const orq = orquestadorConMock();
 
@@ -36,8 +36,8 @@ describe('Orquestador.procesarMensaje', () => {
     const { estado, mensaje } = await orq.procesarMensaje(estadoInicial(), '', sesionSinValidar());
 
     // Assert
-    expect(estado.nombre).toBe('identificando_intencion');
-    expect(mensaje).toContain('tratamiento de tus datos');
+    expect(estado.nombre).toBe('esperando_consentimiento');
+    expect(mensaje).toContain('¿autorizas el tratamiento');
   });
 
   it('should require identity validation before delivering a certificate (compuerta de identidad)', async () => {

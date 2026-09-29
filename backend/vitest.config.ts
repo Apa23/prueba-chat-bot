@@ -11,6 +11,7 @@ export default defineConfig({
         'src/application/herramientas/contrato.ts',
         'src/application/llm/llm-port.ts',
         'src/infrastructure/llm/llm-mock.ts',
+        'src/application/puertos/**',
       ],
     },
   },

@@ -1,6 +1,6 @@
-import express, { type Express, type Request, type Response } from 'express';
+import express, { type Express, type Request, type Response, type Router } from 'express';
 
-export function createApp(): Express {
+export function createApp(sesionesRouter?: Router): Express {
   const app = express();
 
   app.use(express.json());
@@ -12,6 +12,10 @@ export function createApp(): Express {
       timestamp: new Date().toISOString(),
     });
   });
+
+  if (sesionesRouter) {
+    app.use('/sesiones', sesionesRouter);
+  }
 
   return app;
 }

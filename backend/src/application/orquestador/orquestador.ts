@@ -2,7 +2,12 @@ import type { LlmPort } from '../llm/llm-port.js';
 import type { Sesion } from '../../domain/sesion.js';
 import { datosFaltantesPara, type DatosRecolectados } from '../../domain/certificado.js';
 import type { ResponderFaq } from '../faq/responder-faq.js';
+import { pareceInyeccion } from '../seguridad/deteccion-inyeccion.js';
 import { type EstadoConversacion } from './estados.js';
+
+export interface LoggerOrquestador {
+  advertencia(evento: string, datos?: unknown): void;
+}
 
 export interface RespuestaOrquestador {
   readonly estado: EstadoConversacion;
@@ -20,6 +25,7 @@ export class Orquestador {
   constructor(
     private readonly llm: LlmPort,
     private readonly responderFaq: ResponderFaq,
+    private readonly logger?: LoggerOrquestador,
   ) {}
 
   async procesarMensaje(
@@ -27,6 +33,9 @@ export class Orquestador {
     mensajeUsuario: string,
     sesion: Sesion,
   ): Promise<RespuestaOrquestador> {
+    if (pareceInyeccion(mensajeUsuario)) {
+      this.logger?.advertencia('posible_prompt_injection', { sesionId: sesion.id });
+    }
     try {
       return await this.transicionar(estado, mensajeUsuario, sesion);
     } catch {

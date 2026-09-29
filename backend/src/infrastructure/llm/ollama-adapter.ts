@@ -1,5 +1,6 @@
 import type { LlmPort } from '../../application/llm/llm-port.js';
 import { intencionSchema, type Intencion } from '../../application/llm/intencion.js';
+import { REGLAS_SEGURIDAD_LLM } from '../../application/seguridad/instrucciones-sistema.js';
 
 export interface OllamaConfig {
   readonly baseUrl: string;
@@ -32,7 +33,7 @@ export class OllamaLlmAdapter implements LlmPort {
   }
 
   async redactar(instruccion: string, contexto: string): Promise<string> {
-    return this.chat(instruccion, contexto, false);
+    return this.chat(`${REGLAS_SEGURIDAD_LLM}\n\n${instruccion}`, contexto, false);
   }
 
   private async chat(system: string, user: string, formatoJson: boolean): Promise<string> {

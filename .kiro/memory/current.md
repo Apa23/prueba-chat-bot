@@ -67,6 +67,13 @@ Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 - [ ] Cerrar el plan por fases.
 - [ ] Definir estructura de carpetas del proyecto (arquitectura hexagonal).
 
+## Estado de Git / push
+- Rama de trabajo: `feat/backend` (genérica para todo el backend). PUSHEADA a origin.
+- Ramas protegidas en Cerberus (no admiten push directo): develop, master, certification, qa, ciberseguridad.
+- Flujo: trabajar en feat/backend → push → abrir PR hacia develop en GitHub.
+- pre_push de Cerberus valida: commits, SAST, compilación, tests. TODO PASA.
+- PR pendiente de abrir: https://github.com/Apa23/prueba-chat-bot/pull/new/feat/backend
+
 ## Convención de commits (Cerberus — hook corporativo activo)
 Se decidió CONVIVIR con Cerberus (validador corporativo de Protección, instalado global).
 Reglas que DEBEN cumplirse en cada commit para pasar sin forzar:

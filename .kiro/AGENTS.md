@@ -24,6 +24,8 @@ relevante presento (1) la decisión a tomar, (2) alternativas reales con tradeof
 - Preferir soluciones que el candidato entiende y puede defender sobre soluciones "impresionantes" que no domina.
 - Mantener actualizada la memoria (.kiro/memory) y los reportes (.kiro/reports) como evidencia.
 - Al terminar cada fase, hacer `git push` al remoto (github.com/Apa23/prueba-chat-bot).
+- Desde Fase 3 en adelante, construir TODAS las fases en conjunto con el candidato (no delegar
+  a sub-agentes). El candidato debe entender y poder defender cada pieza.
 
 ## Decisiones generales ya tomadas (ver .kiro/memory/definition.md para el detalle)
 

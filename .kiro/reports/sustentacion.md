@@ -86,6 +86,13 @@
 - Decisión: documentar y monitorear en CI, no aplicar fix forzado (breaking change sin reducir
   riesgo real). Criterio: analizar el vector, no reaccionar al número.
 
+## Latencia del LLM (medida contra Ollama real, qwen2.5:7b en M4/16GB)
+- Clasificación de intención: primera llamada ~7.3s (cold start, carga del modelo de 4.7GB a RAM),
+  llamadas en caliente 0.6–1.5s. Promedio de la corrida de prueba ~2s (arrastrado por el cold start).
+- Los 6 casos de prueba de clasificación acertaron, incluido el fuera de alcance ("chiste" → desconocida).
+- Defensa: latencia en caliente aceptable para chat; el cold start se mitiga en producción
+  manteniendo el modelo precargado (o con Bedrock, sin gestión de carga local).
+
 ## Pruebas (20% de la rúbrica)
 - 32 pruebas al cierre de Fase 2. Patrón: Vitest + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.

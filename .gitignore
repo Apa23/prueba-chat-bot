@@ -1,0 +1,39 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Build
+dist/
+build/
+**/dist/
+**/build/
+
+# Secretos y entorno — NUNCA subir al repo (requisito de la prueba)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Cobertura de pruebas
+coverage/
+**/coverage/
+
+# Artefactos generados en runtime
+generated-pdfs/
+tmp/
+*.tmp
+
+# Sistema operativo / editor
+.DS_Store
+.idea/
+*.swp
+
+# Documentos fuente de la prueba (PDFs originales, no van al repo público)
+*.pdf

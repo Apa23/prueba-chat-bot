@@ -1,0 +1,19 @@
+{
+  "name": "prueba-chat-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototipo de chatbot con IA para generación de certificados (Opción B - prueba técnica). Prototipo de evaluación, no oficial.",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "test": "npm run test --workspace backend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

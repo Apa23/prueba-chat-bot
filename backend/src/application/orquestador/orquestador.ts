@@ -26,6 +26,9 @@ const MENSAJE_SESION_TERMINADA =
 const MENSAJE_REQUIERE_CONSENTIMIENTO =
   'Para continuar, primero debes autorizar el tratamiento de tus datos personales.';
 
+const MENSAJE_INYECCION_RECHAZADA =
+  'No puedo atender esa solicitud. Solo puedo ayudarte con tus propios certificados y preguntas frecuentes. ¿En qué puedo ayudarte?';
+
 export class Orquestador {
   constructor(
     private readonly llm: LlmPort,
@@ -38,9 +41,6 @@ export class Orquestador {
     mensajeUsuario: string,
     sesion: Sesion,
   ): Promise<RespuestaOrquestador> {
-    if (pareceInyeccion(mensajeUsuario)) {
-      this.logger?.advertencia('posible_prompt_injection', { sesionId: sesion.id });
-    }
     try {
       return await this.transicionar(estado, mensajeUsuario, sesion);
     } catch {
@@ -70,6 +70,14 @@ export class Orquestador {
 
     if (estado.nombre === 'esperando_consentimiento') {
       return { estado, mensaje: MENSAJE_REQUIERE_CONSENTIMIENTO };
+    }
+
+    // Capa adicional (no la barrera principal): ante un intento evidente de inyección se
+    // rechaza cortésmente y se registra, sin procesar la solicitud. La barrera dura sigue
+    // siendo el aislamiento por sesión (puedeAccederA), que protege aunque esto falle.
+    if (pareceInyeccion(mensajeUsuario)) {
+      this.logger?.advertencia('posible_prompt_injection', { sesionId: sesion.id });
+      return { estado, mensaje: MENSAJE_INYECCION_RECHAZADA };
     }
 
     const intencion = await this.llm.clasificarIntencion(mensajeUsuario);

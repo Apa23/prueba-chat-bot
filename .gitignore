@@ -7,6 +7,8 @@ dist/
 build/
 **/dist/
 **/build/
+*.tsbuildinfo
+**/*.tsbuildinfo
 
 # Secretos y entorno — NUNCA subir al repo (requisito de la prueba)
 .env
@@ -37,8 +39,3 @@ tmp/
 
 # Documentos fuente de la prueba (PDFs originales, no van al repo público)
 *.pdf
-
-# IA sources
-.kiro/skills/
-.kiro/steering/
-.kiro/AGENTS.md

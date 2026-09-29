@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/*.tsbuildinfo
+.git
+.github
+.kiro
+.env
+.env.*
+*.pdf
+*.log

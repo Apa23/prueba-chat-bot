@@ -1,17 +1,27 @@
-import express, { type Express, type Request, type Response } from 'express';
+import express, { type Express, type Request, type Response, type Router } from 'express';
 
-/**
- * Construye la aplicación HTTP (BFF). Punto de entrada de la capa de interfaces.
- *
- * En esta Fase 1 solo expone un health check. Las rutas del chat, identidad y
- * descarga de PDF se añadirán en fases posteriores, montándose sobre esta misma app.
- */
-export function createApp(): Express {
+export interface RoutersApp {
+  readonly sesiones?: Router;
+  readonly descargas?: Router;
+  readonly middlewareAcceso?: (req: Request, res: Response, next: () => void) => void;
+}
+
+export function createApp(routers: RoutersApp = {}): Express {
   const app = express();
 
   app.use(express.json());
 
-  // Health check: permite verificar que el servicio está vivo (útil para Docker y CI).
+  app.use((req: Request, res: Response, next) => {
+    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN ?? '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, X-Access-Key');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  });
+
   app.get('/health', (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'ok',
@@ -19,6 +29,15 @@ export function createApp(): Express {
       timestamp: new Date().toISOString(),
     });
   });
+
+  const proteger = routers.middlewareAcceso;
+
+  if (routers.sesiones) {
+    app.use('/sesiones', ...(proteger ? [proteger] : []), routers.sesiones);
+  }
+  if (routers.descargas) {
+    app.use('/descargas', ...(proteger ? [proteger] : []), routers.descargas);
+  }
 
   return app;
 }

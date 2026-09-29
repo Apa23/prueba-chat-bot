@@ -23,6 +23,9 @@ relevante presento (1) la decisión a tomar, (2) alternativas reales con tradeof
 - Señalar riesgos antes de que cuesten tiempo (especialmente en una sola noche de trabajo).
 - Preferir soluciones que el candidato entiende y puede defender sobre soluciones "impresionantes" que no domina.
 - Mantener actualizada la memoria (.kiro/memory) y los reportes (.kiro/reports) como evidencia.
+- Al terminar cada fase, hacer `git push` al remoto (github.com/Apa23/prueba-chat-bot).
+- Desde Fase 3 en adelante, construir TODAS las fases en conjunto con el candidato (no delegar
+  a sub-agentes). El candidato debe entender y poder defender cada pieza.
 
 ## Decisiones generales ya tomadas (ver .kiro/memory/definition.md para el detalle)
 
@@ -41,6 +44,10 @@ relevante presento (1) la decisión a tomar, (2) alternativas reales con tradeof
 ## Principios de diseño para el código
 
 - SOLID + Clean Code. Separación de capas (Clean/Hexagonal Architecture).
+- **Comentarios: solo comentar aquello que NO se pueda inferir leyendo el código.** El
+  código debe ser autoexplicativo (nombres descriptivos). No comentar lo que el nombre de
+  una función, variable o tipo ya dice. Reservar comentarios para el "por qué" no obvio:
+  decisiones de diseño, invariantes de seguridad, o contexto del negocio que no se deduce.
 - El LLM nunca accede a la fuente de datos directamente: solo vía herramientas con
   validación y autorización por sesión.
 - Seguridad de LLM (OWASP Top 10 para LLM): anti prompt-injection, aislamiento de datos

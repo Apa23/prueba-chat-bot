@@ -1,0 +1,47 @@
+{
+  "_descripcion": "Definiciones de contenido de los certificados (plantillas). El adaptador PDFKit las lee y las pinta. Permite ajustar textos y etiquetas sin tocar código.",
+  "marcaAgua": "DOCUMENTO DE PRUEBA - SIN VALIDEZ",
+  "rotuloPrototipo": "Prototipo de evaluación - no oficial",
+  "plantillas": {
+    "AFILIACION_PO": {
+      "titulo": "Certificado de afiliación a pensión obligatoria",
+      "campos": [
+        { "etiqueta": "Nombre del afiliado", "origen": "nombre" },
+        { "etiqueta": "Documento", "origen": "documento" },
+        { "etiqueta": "Fecha de afiliación", "origen": "fechaAfiliacion" },
+        { "etiqueta": "Estado", "origen": "estado" },
+        { "etiqueta": "Fondo", "origen": "fondo" }
+      ]
+    },
+    "TRIBUTARIO_PV": {
+      "titulo": "Certificado tributario de pensión voluntaria",
+      "campos": [
+        { "etiqueta": "Nombre del afiliado", "origen": "nombre" },
+        { "etiqueta": "Documento", "origen": "documento" },
+        { "etiqueta": "Año gravable", "origen": "anioGravable" },
+        { "etiqueta": "Aportes del año", "origen": "aportes" },
+        { "etiqueta": "Retiros", "origen": "retiros" },
+        { "etiqueta": "Saldo al 31 de diciembre", "origen": "saldo31Dic" },
+        { "etiqueta": "Retención contingente", "origen": "retencionContingente" }
+      ]
+    },
+    "CESANTIAS_SALDO": {
+      "titulo": "Certificado de saldo de cesantías",
+      "campos": [
+        { "etiqueta": "Nombre del afiliado", "origen": "nombre" },
+        { "etiqueta": "Documento", "origen": "documento" },
+        { "etiqueta": "Saldo a la fecha", "origen": "saldoActual" },
+        { "etiqueta": "Fecha de corte", "origen": "fechaCorteSaldo" }
+      ]
+    },
+    "CESANTIAS_RETIROS": {
+      "titulo": "Certificado de retiros de cesantías",
+      "campos": [
+        { "etiqueta": "Nombre del afiliado", "origen": "nombre" },
+        { "etiqueta": "Documento", "origen": "documento" },
+        { "etiqueta": "Año", "origen": "anio" },
+        { "etiqueta": "Detalle de retiros", "origen": "detalleRetiros" }
+      ]
+    }
+  }
+}

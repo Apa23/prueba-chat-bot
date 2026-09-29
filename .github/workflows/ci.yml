@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [develop, master]
+
+jobs:
+  build-test:
+    name: Compilación y pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Compilar (backend + frontend)
+        run: npm run build
+      - name: Pruebas con cobertura
+        run: npm run test:coverage --workspace backend
+
+  seguridad:
+    name: Controles de seguridad (SCA + secretos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Instalar dependencias
+        run: npm ci
+      # SCA: falla ante vulnerabilidades ALTAS/CRÍTICAS en dependencias de PRODUCCIÓN.
+      # Las de desarrollo (dev server) se toleran de forma consciente (ver reporte de seguridad).
+      - name: Análisis de dependencias (SCA)
+        run: npm audit --omit=dev --audit-level=high
+      # Detección de secretos en el historial con Gitleaks.
+      - name: Detección de secretos
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sast:
+    name: Análisis estático (SAST)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - name: Analizar
+        uses: github/codeql-action/analyze@v3

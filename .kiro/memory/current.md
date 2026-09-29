@@ -18,7 +18,12 @@ Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 - README actualizado con estado real, ejecución, pruebas, estructura.
 - Pipeline CI (.github/workflows/ci.yml): build+test, SCA (npm audit --omit=dev), secretos (Gitleaks),
   SAST (CodeQL). SCA coherente con decisión de Fase 1 (tolerar dev-only).
-- 103 tests. Pendiente: grabar video (candidato), verificar docker compose up.
+- 103 tests.
+- Docker: Dockerfiles multi-stage (backend Node alpine; frontend build+Nginx), .dockerignore,
+  compose con context en raíz. VERIFICADO end-to-end: `docker compose -p certbot up` levanta ambos,
+  frontend por Nginx (5173), backend (3001), alcanza Ollama del host y genera certificado.
+- HALLAZGO: la ruta con tildes rompe BuildKit → usar DOCKER_BUILDKIT=0 (documentado en README).
+- ÚNICO pendiente real: grabar video (lo hace el candidato). Proyecto funcionalmente completo.
 
 ## Fase 8 — resumen
 - Script reproducible backend/scripts/casos-prueba.ts ejecuta los 12 casos contra el sistema real (Ollama).

@@ -54,10 +54,19 @@ OTP válido para todos los afiliados de prueba: `123456`. Documentos: `PRUEBA-00
 
 ## Ejecución con Docker (un solo comando)
 
+Requiere Ollama corriendo en el host con el modelo descargado.
+
 ```bash
-docker compose up
+PROTOTYPE_ACCESS_KEY=tu-clave docker compose -p certbot up --build
 ```
 
+Frontend en http://localhost:5173, backend en http://localhost:3001.
+
+> **Nota:** si la ruta del proyecto contiene tildes o caracteres especiales, el builder BuildKit
+> puede fallar. En ese caso, usar el builder clásico:
+> ```bash
+> DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 PROTOTYPE_ACCESS_KEY=tu-clave docker compose -p certbot up --build
+> ```
 > Ollama corre en el host (aceleración de GPU en Apple Silicon); los contenedores lo alcanzan vía
 > `host.docker.internal`. Detalle en `docker-compose.yml`.
 

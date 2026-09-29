@@ -7,7 +7,18 @@
 Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 
 ## Fase actual
-**Fase 4 COMPLETADA — generación de PDF. Flujo completo verificado con Ollama real. Siguiente: Fase 5 (RAG/FAQ).**
+**Fase 5 COMPLETADA — grounding/FAQ. Casos 6 y 7 verificados con Ollama real. Siguiente: Fase 6 (seguridad LLM).**
+
+## Fase 5 — resumen
+- Grounding por búsqueda léxica con umbral (0.5), NO vector DB (ADR-002: proporcional a 8 FAQs).
+- buscarFaqRelevante (función pura): normaliza acentos/mayúsculas/stopwords, puntúa por coincidencia
+  de términos, devuelve la mejor solo si supera umbral; si no → fuera de alcance.
+- FaqRepositoryPort + JsonFaqRepository (lee las 8 FAQ). ResponderFaq usa buscar_faq como herramienta
+  PÚBLICA (requiereAutorizacion:false) en el registro. La fuente se toma del dato, no del LLM.
+- estaDentroDeAlcance ahora se usa con semántica real (tieneGrounding), no hardcodeado.
+- Orquestador: rama pregunta_frecuente responde con fuente si hay grounding, escala si no (casos 6, 7).
+- 80 tests, cobertura 95.57%. Verificado en vivo: caso 6 (responde+cita fuente), caso 7 (escala).
+- ADR-002 creado (grounding léxico sin vector DB).
 
 ## Fase 4 — resumen
 - PDFKit (liviano, sin Chromium). Plantillas de contenido externalizadas a data/plantillas-certificado.json.

@@ -116,8 +116,21 @@
   confirma autenticidad sin dar acceso al documento.
 - Entrega por enlace temporal: GET /descargas/:token. En memoria (coherente con persistencia efímera).
 
+## Grounding de FAQs (Fase 5, B5) — ADR-002
+- Búsqueda léxica con umbral, NO vector DB. Defensa: "solución proporcional al problema; 8 FAQs no
+  justifican infraestructura vectorial". Muestra criterio de no sobre-ingenierizar.
+- El umbral ES la política de fuera de alcance: si nada supera el umbral → escala a humano (caso 7),
+  no improvisa. Conecta con estaDentroDeAlcance del dominio.
+- La fuente se toma del dato de la FAQ, no la genera el LLM → la cita es siempre real (caso 6).
+- El LLM redacta a partir del contexto (la FAQ seleccionada), no accede al JSON de FAQs directo
+  (coherente con B3: buscar_faq es una herramienta, aunque pública por no ser dato personal).
+- Verificado en vivo: caso 6 respondió citando "Base de conocimiento... sección Certificados";
+  caso 7 (recomendación de inversión) escaló a asesor sin dar asesoría financiera.
+- Límite reconocido: la búsqueda léxica no capta sinónimos; en KB grande se migraría a embeddings
+  cambiando solo el adaptador (hexagonal lo permite).
+
 ## Pruebas (20% de la rúbrica)
-- 72 pruebas al cierre de Fase 4 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
+- 80 pruebas al cierre de Fase 5 (incluye prueba de integración HTTP con supertest). Patrón: Vitest
   + AAA, nombres `should + acción + resultado`,
   tiempo determinista (constantes, no Date.now()), un comportamiento por test.
 - Tests trazados a los casos del anexo B.3 (1, 2, 4, 5, 6, 7, 8 nombrados en los tests).

@@ -26,6 +26,10 @@ Lunes 28 de septiembre — sesión de arranque (noche de trabajo).
 - Backend carga .env con --env-file-if-exists (Node nativo, sin deps). Clave local en .env (no versionado):
   PROTOTYPE_ACCESS_KEY=proteccion-demo-2026 (ingresar esa clave en la pantalla de acceso del front).
 - .env.example completo como plantilla (sin secretos reales).
+- Mejora consentimiento explícito: nuevo estado esperando_consentimiento + sesion_terminada.
+  Endpoint POST /sesiones/:id/consentimiento {acepta}. Acepta→continúa; rechaza→elimina sesión (404 después).
+  Front: botones Acepto/No acepto (molécula ConsentimientoDatos); al rechazar bloquea la UI.
+  Mensaje: "Para atenderte, ¿autorizas el tratamiento de tus datos personales...?". 102 tests. Verificado e2e.
 
 ## Fase 6 — resumen
 - Enmascaramiento de PII (enmascararObjeto): documento parcial, nombre/correo → [PII], valores → [SENSIBLE],

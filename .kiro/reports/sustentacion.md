@@ -139,6 +139,10 @@
 - Enmascaramiento de PII en logs: documento parcial, nombre/correo ocultos, valores sensibles marcados,
   OTP nunca se registra. "Un log filtrado no revela información de ningún afiliado."
 - Mapeo OWASP Top 10 LLM completo en reporte dedicado (LLM01, 02, 06, 07, 08, 09, 10).
+- Consentimiento explícito de tratamiento de datos: no solo se informa, se REGISTRA la aceptación
+  como acción auditable (endpoint dedicado POST /consentimiento, no un mensaje interpretado por el LLM).
+  Con opción real de rechazar: al rechazar se elimina la sesión y se bloquea la UI (respeto real, no cosmético).
+  Defensa: "para una entidad vigilada, el consentimiento es un acto legal de primera clase, con su propio endpoint y registro."
 
 ## Frontend de chat (Fase 7, B7)
 - React + Vite, atomic design (atoms/molecules/organisms). Hook useChat con patrón facade:

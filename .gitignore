@@ -39,5 +39,6 @@ tmp/
 *.pdf
 
 # IA sources
-.kiro/skills
-.kiro/steering
+.kiro/skills/
+.kiro/steering/
+.kiro/AGENTS.md

@@ -9,6 +9,8 @@ export default defineConfig({
         'src/main.ts',
         'src/domain/afiliado.ts',
         'src/application/herramientas/contrato.ts',
+        'src/application/llm/llm-port.ts',
+        'src/infrastructure/llm/llm-mock.ts',
       ],
     },
   },

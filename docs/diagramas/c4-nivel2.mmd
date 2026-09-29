@@ -1,0 +1,30 @@
+graph TB
+    afiliado["Afiliado / Panel"]
+    subgraph proto["Prototipo (docker compose)"]
+        front["Frontend — React + Vite<br/>chat web, atomic design"]
+        subgraph bff["Backend / BFF — Node + TS (hexagonal)"]
+            interfaces["Interfaces (HTTP)<br/>endpoints REST + middleware de acceso + registro de herramientas"]
+            aplicacion["Application<br/>orquestador (máquina de estados), casos de uso, puertos, seguridad"]
+            dominio["Domain<br/>entidades y reglas puras (puedeAccederA, validarIdentidad...)"]
+            infra["Infrastructure<br/>adaptadores: Ollama, repos JSON, PDF (PDFKit), sesión en memoria, logger"]
+        end
+    end
+    ollama["Ollama (host) qwen2.5:7b"]
+    json["data/*.json (solo lectura)"]
+
+    afiliado -->|"HTTPS/JSON + X-Access-Key"| front
+    front -->|"REST: /sesiones, /mensajes, /identidad, /consentimiento, /descargas"| interfaces
+    interfaces --> aplicacion
+    aplicacion --> dominio
+    aplicacion -->|"puertos (interfaces)"| infra
+    infra -->|"HTTP /api/chat"| ollama
+    infra -->|"lee"| json
+
+    classDef c fill:#374151,color:#fff,stroke:#1f2937;
+    classDef cap fill:#eef2ff,color:#111,stroke:#818cf8;
+    classDef ext fill:#e5e7eb,color:#111,stroke:#9ca3af;
+    classDef person fill:#dbeafe,color:#111,stroke:#60a5fa;
+    class front c;
+    class interfaces,aplicacion,dominio,infra cap;
+    class ollama,json ext;
+    class afiliado person;

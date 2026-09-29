@@ -50,6 +50,15 @@ npm run dev:frontend    # http://localhost:5173
 ```
 
 Ingresa la clave definida en `PROTOTYPE_ACCESS_KEY` en la pantalla de acceso.
+
+> **Clave de acceso — qué escribir en la pantalla:**
+> - Si creaste `.env` con tu propia `PROTOTYPE_ACCESS_KEY`, usa ese valor.
+> - Si NO configuraste nada, el backend arranca igual (no falla) con la clave por defecto
+>   `clave-de-prueba-local` en ejecución local, o `cambia-esta-clave` en Docker (valor por defecto
+>   del `docker-compose.yml`). Esa es la clave que debes ingresar en la pantalla de acceso.
+> - El valor que pongas en `PROTOTYPE_ACCESS_KEY` (backend) es el que debes escribir en el frontend:
+>   ambos deben coincidir.
+
 OTP válido para todos los afiliados de prueba: `123456`. Documentos: `PRUEBA-0001` a `PRUEBA-0005`.
 
 ## Ejecución con Docker (un solo comando)
